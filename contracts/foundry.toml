@@ -1,0 +1,9 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib", "../node_modules"]
+test = "test"
+remappings = [
+    "@pythnetwork/entropy-sdk-solidity/=../node_modules/@pythnetwork/entropy-sdk-solidity/",
+    "forge-std/=lib/forge-std/src/"
+]
