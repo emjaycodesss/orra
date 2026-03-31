@@ -12,6 +12,8 @@ export const ORRA_ABI = [
     inputs: [
       { indexed: true, internalType: "uint64", name: "sequenceNumber", type: "uint64" },
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: false, internalType: "uint32", name: "feedId", type: "uint32" },
+      { indexed: false, internalType: "bytes32", name: "oracleSnapshotHash", type: "bytes32" },
     ],
     name: "ReadingRequested",
     type: "event",
@@ -22,15 +24,28 @@ export const ORRA_ABI = [
       { indexed: true, internalType: "uint64", name: "sequenceNumber", type: "uint64" },
       { indexed: true, internalType: "address", name: "user", type: "address" },
       { indexed: false, internalType: "uint8", name: "cardIndex", type: "uint8" },
+      { indexed: false, internalType: "uint32", name: "feedId", type: "uint32" },
+      { indexed: false, internalType: "bytes32", name: "oracleSnapshotHash", type: "bytes32" },
+      { indexed: false, internalType: "bytes32", name: "randomNumber", type: "bytes32" },
     ],
     name: "CardDrawn",
     type: "event",
   },
   {
-    inputs: [],
+    inputs: [
+      { internalType: "uint32", name: "feedId", type: "uint32" },
+      { internalType: "bytes32", name: "oracleSnapshotHash", type: "bytes32" },
+    ],
     name: "requestReading",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "entropy",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -40,13 +55,25 @@ export const ORRA_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [{ internalType: "uint64", name: "", type: "uint64" }],
+    name: "pendingReadings",
+    outputs: [
+      { internalType: "address", name: "user", type: "address" },
+      { internalType: "uint32", name: "feedId", type: "uint32" },
+      { internalType: "bytes32", name: "oracleSnapshotHash", type: "bytes32" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 export const ORRA_ADDRESS =
   process.env.NEXT_PUBLIC_ORRA_CONTRACT_ADDRESS ?? "";
 
 export const BASE_RPC_URL =
-  process.env.NEXT_PUBLIC_BASE_RPC_URL ?? "https://mainnet.base.org";
+  process.env.NEXT_PUBLIC_BASE_RPC_URL ?? "https://sepolia.base.org";
 
 export const ENTROPY_ADDRESS =
-  process.env.NEXT_PUBLIC_ENTROPY_ADDRESS ?? "0x6e7d74fa7d5c90fef9f0512987605a6d546181bb";
+  process.env.NEXT_PUBLIC_ENTROPY_ADDRESS ??
+  "0x41c9e39574F40Ad34c79f1C99B66A45eFB830d4c";
