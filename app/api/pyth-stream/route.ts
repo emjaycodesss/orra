@@ -1,12 +1,8 @@
 export const runtime = "nodejs";
 
 import WebSocket from "ws";
-
-const PYTH_WS_URLS = [
-  "wss://pyth-lazer-0.dourolabs.app/v1/stream",
-  "wss://pyth-lazer-1.dourolabs.app/v1/stream",
-  "wss://pyth-lazer-2.dourolabs.app/v1/stream",
-];
+import { pickWsUrl, SSE_HEADERS } from "@/lib/pyth-ws";
+import { devWarn } from "@/lib/dev-warn";
 
 const PROPERTIES = [
   "price",
@@ -36,8 +32,7 @@ export async function GET(request: Request) {
 
   const stream = new ReadableStream({
     start(controller) {
-      const wsUrl = PYTH_WS_URLS[Math.floor(Math.random() * PYTH_WS_URLS.length)];
-      ws = new WebSocket(wsUrl, {
+      ws = new WebSocket(pickWsUrl(), {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -61,13 +56,28 @@ export async function GET(request: Request) {
         try {
           const msg = JSON.parse(data.toString());
           if (msg.type === "streamUpdated" && msg.parsed?.priceFeeds?.[0]) {
-            const feed = msg.parsed.priceFeeds[0];
+            const feed = msg.parsed.priceFeeds[0] as Record<string, unknown>;
+
+            const normalized = {
+              priceFeedId:          feed.priceFeedId,
+              price:                feed.price,
+              emaPrice:             feed.emaPrice,
+              confidence:           feed.confidence,
+              emaConfidence:        feed.emaConfidence,
+              bestBidPrice:         feed.bestBidPrice,
+              bestAskPrice:         feed.bestAskPrice,
+              publisherCount:       feed.publisherCount,
+              marketSession:        feed.marketSession,
+              feedUpdateTimestamp:  feed.feedUpdateTimestamp,
+              exponent:             feed.exponent,
+            };
+
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify(feed)}\n\n`)
+              encoder.encode(`data: ${JSON.stringify(normalized)}\n\n`)
             );
           }
-        } catch {
-          // ignore parse errors
+        } catch (e) {
+          devWarn("api:pyth-stream:ws-message", e);
         }
       });
 
@@ -91,11 +101,5 @@ export async function GET(request: Request) {
     },
   });
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
+  return new Response(stream, { headers: SSE_HEADERS });
 }
