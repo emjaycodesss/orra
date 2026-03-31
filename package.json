@@ -4,9 +4,13 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
+    "clean": "rm -rf .next",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -20,6 +24,9 @@
   },
   "homepage": "https://github.com/emjaycodesss/orra#readme",
   "description": "",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "dependencies": {
     "@pythnetwork/entropy-sdk-solidity": "^2.2.1",
     "@rainbow-me/rainbowkit": "^2.2.10",
@@ -29,7 +36,10 @@
     "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.27",
     "ethers": "^6.16.0",
-    "next": "^14.2.35",
+    "gsap": "^3.14.2",
+    "html-to-image": "^1.11.13",
+    "lucide-react": "^0.468.0",
+    "next": "^15.5.14",
     "postcss": "^8.5.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -40,7 +50,9 @@
     "ws": "^8.20.0"
   },
   "devDependencies": {
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.35"
+    "@eslint/eslintrc": "^3.3.5",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.14",
+    "vitest": "^3.2.4"
   }
 }
