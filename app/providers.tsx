@@ -2,23 +2,29 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { base } from "wagmi/chains";
+import { base, baseSepolia } from "wagmi/chains";
 import {
   RainbowKitProvider,
   lightTheme,
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { type ReactNode, useRef } from "react";
+import { ReadingAudioProvider } from "@/components/reading/ReadingAudioProvider";
 
-const config = createConfig({
-  chains: [base],
-  transports: {
-    [base.id]: http(
-      process.env.NEXT_PUBLIC_BASE_RPC_URL ?? "https://mainnet.base.org"
-    ),
-  },
-  ssr: true,
-});
+const rpcUrl = process.env.NEXT_PUBLIC_BASE_RPC_URL ?? "https://sepolia.base.org";
+const isTestnet = rpcUrl.includes("sepolia");
+
+const config = isTestnet
+  ? createConfig({
+      chains: [baseSepolia],
+      transports: { [baseSepolia.id]: http(rpcUrl) },
+      ssr: true,
+    })
+  : createConfig({
+      chains: [base],
+      transports: { [base.id]: http(rpcUrl) },
+      ssr: true,
+    });
 
 export function Providers({ children }: { children: ReactNode }) {
   const queryClientRef = useRef<QueryClient | null>(null);
@@ -36,7 +42,7 @@ export function Providers({ children }: { children: ReactNode }) {
             borderRadius: "medium",
           })}
         >
-          {children}
+          <ReadingAudioProvider>{children}</ReadingAudioProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
