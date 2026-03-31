@@ -17,7 +17,7 @@ import {
   SPREAD_DEAL_ANIMATION_REDUCED_MS,
   SPREAD_DEAL_STAGGER_MS,
 } from "@/lib/spread-phase-constants";
-const BACK_SRC = "/cards/back.svg";
+const BACK_SRC = "/cards/back.webp";
 const STILLNESS_MS = 1500;
 const STILLNESS_REDUCED_MS = 220;
 const SETTLE_PAUSE_MS = 900;

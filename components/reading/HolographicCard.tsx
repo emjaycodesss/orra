@@ -35,7 +35,7 @@ function getReducedMotion(): boolean {
   );
 }
 
-const BACK_SRC = "/cards/back.svg";
+const BACK_SRC = "/cards/back.webp";
 
 function pointerTiltDegs(px: number, py: number) {
   const centerX = px - 50;

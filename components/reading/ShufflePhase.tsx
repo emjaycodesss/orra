@@ -16,7 +16,7 @@ import {
   SHUFFLE_PHASE_Y_OFFSET as Y_OFFSET,
 } from "@/lib/shuffle-phase-timing";
 
-const BACK_SRC = "/cards/back.svg";
+const BACK_SRC = "/cards/back.webp";
 
 type ContractWaitStatus =
   | "requesting"
