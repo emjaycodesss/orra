@@ -138,4 +138,4 @@ Sound on the **reading** route (`/reading`) uses clips from [Freesound](https://
 
 ## License
 
-ISC (see `package.json`).
+Licensed under the [Apache License, Version 2.0](LICENSE). See [`NOTICE`](NOTICE) for copyright. Third-party code (e.g. `contracts/lib/forge-std`) remains under its respective licenses.
