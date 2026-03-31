@@ -6,10 +6,10 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    fontFamily: {
-      sans: ["Manrope", "sans-serif"],
-    },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-manrope)", "Manrope", "sans-serif"],
+      },
       colors: {
         surface: {
           0: "#F8F6FC",
@@ -31,11 +31,11 @@ const config: Config = {
           light: "#A78BFA",
           surface: "rgba(124, 58, 237, 0.06)",
         },
-        bull: { DEFAULT: "#16A34A" },
-        bear: { DEFAULT: "#DC2626" },
-        clear: "#16A34A",
-        storm: "#DC2626",
-        fog: "#7C3AED",
+        bull: { DEFAULT: "#10B981" },
+        bear: { DEFAULT: "#E11D6E" },
+        positive: "#10B981",
+        danger: "#E11D6E",
+        caution: "#7C3AED",
       },
       borderColor: {
         DEFAULT: "rgba(26, 18, 37, 0.08)",

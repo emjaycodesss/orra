@@ -26,3 +26,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Test tooling (e.g. vitest/jest/c8 output)
+coverage/
+
+# Cursor MCP — keep local; drop this line if you want `.mcp.json` committed for a shared setup
+.mcp.json
