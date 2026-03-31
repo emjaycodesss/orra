@@ -76,9 +76,13 @@ contract OrraTest is Test {
     }
 
     function testRequestReading() public {
+        bytes32 hash = keccak256("snapshot");
         vm.prank(user);
-        orra.requestReading{value: 0.001 ether}();
-        assertEq(orra.readings(1), user);
+        orra.requestReading{value: 0.001 ether}(1, hash);
+        (address u, uint32 fid, bytes32 h) = orra.pendingReadings(1);
+        assertEq(u, user);
+        assertEq(fid, uint32(1));
+        assertEq(h, hash);
     }
 
     function testGetFee() public view {
@@ -86,14 +90,15 @@ contract OrraTest is Test {
     }
 
     function testCardDrawn() public {
+        bytes32 snap = keccak256("oracle-snapshot");
         vm.prank(user);
-        orra.requestReading{value: 0.001 ether}();
+        orra.requestReading{value: 0.001 ether}(42, snap);
 
         bytes32 randomNumber = keccak256("test");
         uint8 expectedCard = uint8(uint256(randomNumber) % 22);
 
         vm.expectEmit(true, true, false, true);
-        emit Orra.CardDrawn(1, user, expectedCard);
+        emit Orra.CardDrawn(1, user, expectedCard, uint32(42), snap, randomNumber);
 
         mockEntropy.simulateCallback(address(orra), 1, randomNumber);
     }
@@ -101,7 +106,7 @@ contract OrraTest is Test {
     function testRefundExcess() public {
         uint256 balanceBefore = user.balance;
         vm.prank(user);
-        orra.requestReading{value: 0.01 ether}();
+        orra.requestReading{value: 0.01 ether}(1, bytes32(0));
         uint256 balanceAfter = user.balance;
         assertEq(balanceBefore - balanceAfter, 0.001 ether);
     }
@@ -109,7 +114,28 @@ contract OrraTest is Test {
     function testInsufficientFee() public {
         vm.prank(user);
         vm.expectRevert("Insufficient fee");
-        orra.requestReading{value: 0.0001 ether}();
+        orra.requestReading{value: 0.0001 ether}(1, bytes32(0));
+    }
+
+    /// @dev Must match `computeOracleSnapshotHash` in frontend (ethers.solidityPackedKeccak256).
+    function testOracleSnapshotHashMatchesTsReference() public pure {
+        bytes32 h = keccak256(
+            abi.encodePacked(
+                uint32(1),
+                uint256(100),
+                uint256(2),
+                uint256(3),
+                uint256(4),
+                uint256(5),
+                int256(-8),
+                uint32(7),
+                uint64(123)
+            )
+        );
+        assertEq(
+            h,
+            hex"06d7eb1f730b74cf5d05bf7ff61e0ba9846f0b738704b5615e221a9a8c301b6c"
+        );
     }
 
     function testCardIndexRange() public pure {
