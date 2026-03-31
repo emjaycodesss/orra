@@ -1,0 +1,648 @@
+/* Dashboard + shared chrome + design tokens (was top half of globals.css). */
+
+:root {
+  --surface-0: #EEEAF5;
+  --surface-1: #FFFFFF;
+  --surface-2: #F5F2FB;
+  --surface-3: #E6E0F0;
+  --surface-4: #D9D1E6;
+  --ink-900: #1A1225;
+  --ink-700: #3D2E54;
+  --ink-500: #6B5A82;
+  --ink-400: #8E7FA6;
+  --ink-300: #B3A8C6;
+  --ink-200: #D1CADF;
+  --bull: #10B981;
+  --bear: #E11D6E;
+  
+  --positive: #10B981;
+  --danger: #E11D6E;
+  --caution: #7C3AED;
+  --accent: #7C3AED;
+  --accent-light: #A78BFA;
+  --accent-surface: rgba(124, 58, 237, 0.06);
+  --shadow-sm: 0 1px 2px rgba(26, 18, 37, 0.06);
+  --shadow-md: 0 4px 12px rgba(26, 18, 37, 0.08);
+  --shadow-lg: 0 8px 30px rgba(26, 18, 37, 0.12);
+  --shadow-3d: 0 4px 0 var(--surface-4), 0 1px 0 var(--surface-3), 0 6px 16px rgba(26, 18, 37, 0.08);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  background-color: var(--surface-0);
+  background-image: radial-gradient(circle, var(--surface-4) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink-900);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.15);
+  color: var(--ink-900);
+}
+
+input::placeholder {
+  color: var(--ink-400);
+}
+
+.grain-overlay {
+  display: none;
+}
+
+.card-surface {
+  background: var(--surface-2);
+  border: none;
+  border-radius: 16px;
+  box-shadow:
+    3px 3px 6px rgba(26, 18, 37, 0.1),
+    0 2px 4px rgba(26, 18, 37, 0.06),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card-surface:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    4px 5px 10px rgba(26, 18, 37, 0.12),
+    0 3px 6px rgba(26, 18, 37, 0.08),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+}
+
+.card-surface:active {
+  transform: translateY(0px);
+  box-shadow:
+    2px 2px 4px rgba(26, 18, 37, 0.08),
+    0 1px 3px rgba(26, 18, 37, 0.05),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+}
+
+.card-surface span,
+.card-surface a,
+.card-surface p {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.card-surface-static,
+.card-surface-static:hover,
+.card-surface-static:active {
+  transform: none !important;
+  box-shadow:
+    3px 3px 6px rgba(26, 18, 37, 0.1),
+    0 2px 4px rgba(26, 18, 37, 0.06),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04) !important;
+  transition: none !important;
+}
+
+.zoom-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: var(--surface-2);
+  box-shadow:
+    3px 3px 6px rgba(26, 18, 37, 0.1),
+    0 2px 4px rgba(26, 18, 37, 0.06),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+  transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.4, 1), box-shadow 0.2s ease;
+}
+
+.zoom-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    4px 5px 10px rgba(26, 18, 37, 0.12),
+    0 3px 6px rgba(26, 18, 37, 0.08),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+}
+
+.zoom-btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    2px 2px 4px rgba(26, 18, 37, 0.08),
+    0 1px 3px rgba(26, 18, 37, 0.05),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+}
+
+.zoom-btn-pct {
+  height: 30px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-700);
+  background: var(--surface-2);
+  box-shadow:
+    3px 3px 6px rgba(26, 18, 37, 0.1),
+    0 2px 4px rgba(26, 18, 37, 0.06),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+  transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.4, 1), box-shadow 0.2s ease, color 0.15s;
+}
+
+.zoom-btn-pct:hover {
+  transform: translateY(-1px);
+  color: var(--accent);
+  box-shadow:
+    4px 5px 10px rgba(26, 18, 37, 0.12),
+    0 3px 6px rgba(26, 18, 37, 0.08),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+}
+
+.zoom-btn-pct:active {
+  transform: translateY(1px);
+  box-shadow:
+    2px 2px 4px rgba(26, 18, 37, 0.08),
+    0 1px 3px rgba(26, 18, 37, 0.05),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes cardFlip {
+  0% { transform: perspective(600px) rotateY(0deg) scale(0.95); opacity: 0.5; }
+  50% { transform: perspective(600px) rotateY(90deg) scale(1); opacity: 0; }
+  100% { transform: perspective(600px) rotateY(0deg) scale(1); opacity: 1; }
+}
+
+.animate-card-flip {
+  animation: cardFlip 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+
+.btn-push {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+}
+
+.btn-push .btn-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(124, 58, 237, 0.2);
+  border-radius: 12px;
+  transform: translateY(2px);
+  transition: transform 600ms cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+.btn-push .btn-edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(
+    to left,
+    hsl(265, 60%, 35%) 0%,
+    hsl(265, 60%, 48%) 8%,
+    hsl(265, 60%, 48%) 92%,
+    hsl(265, 60%, 35%) 100%
+  );
+}
+
+.btn-push .btn-front {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: hsl(265, 60%, 52%);
+  border-radius: 12px;
+  transform: translateY(-4px);
+  transition: transform 600ms cubic-bezier(0.3, 0.7, 0.4, 1);
+  user-select: none;
+}
+
+.btn-push:hover .btn-shadow {
+  transform: translateY(4px);
+  transition: transform 250ms cubic-bezier(0.3, 0.7, 0.4, 1.5);
+}
+
+.btn-push:hover .btn-front {
+  transform: translateY(-6px);
+  transition: transform 250ms cubic-bezier(0.3, 0.7, 0.4, 1.5);
+}
+
+.btn-push:active .btn-shadow {
+  transform: translateY(1px);
+  transition: transform 34ms;
+}
+
+.btn-push:active .btn-front {
+  transform: translateY(-2px);
+  transition: transform 34ms;
+}
+
+.btn-push:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-push:disabled .btn-front,
+.btn-push:disabled:hover .btn-front {
+  transform: translateY(-2px);
+}
+
+.btn-push:disabled:hover .btn-shadow {
+  transform: translateY(2px);
+}
+
+.oracle-button {
+  --border-radius: 24px;
+  --padding: 4px;
+  --transition: 0.4s;
+  --button-color: color-mix(in srgb, var(--accent) 12%, var(--ink-900));
+
+  position: relative;
+  z-index: 0;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  padding: 0.5em 1.55em;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1;
+  background-color: var(--button-color);
+  box-shadow:
+    inset 0px 1px 1px color-mix(in srgb, var(--surface-1) 22%, transparent),
+    inset 0px 2px 2px color-mix(in srgb, var(--surface-1) 16%, transparent),
+    inset 0px 4px 4px color-mix(in srgb, var(--surface-1) 10%, transparent),
+    inset 0px 8px 8px color-mix(in srgb, var(--surface-1) 5%, transparent),
+    inset 0px 16px 16px color-mix(in srgb, var(--surface-1) 5%, transparent),
+    0px -1px 1px rgba(26, 18, 37, 0.04),
+    0px -2px 2px rgba(26, 18, 37, 0.06),
+    0px -4px 4px rgba(26, 18, 37, 0.07),
+    0px -8px 8px rgba(26, 18, 37, 0.08),
+    0px -16px 16px rgba(26, 18, 37, 0.1);
+  border: solid 1px color-mix(in srgb, var(--surface-1) 16%, transparent);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition:
+    box-shadow var(--transition),
+    border var(--transition),
+    background-color var(--transition);
+  text-decoration: none;
+  color: inherit;
+  outline: none;
+}
+
+.oracle-button::before {
+  content: "";
+  position: absolute;
+  top: calc(0px - var(--padding));
+  left: calc(0px - var(--padding));
+  width: calc(100% + var(--padding) * 2);
+  height: calc(100% + var(--padding) * 2);
+  border-radius: calc(var(--border-radius) + var(--padding));
+  pointer-events: none;
+  background-image: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--ink-900) 35%, transparent),
+    color-mix(in srgb, var(--ink-900) 78%, transparent)
+  );
+  z-index: -1;
+  transition:
+    box-shadow var(--transition),
+    filter var(--transition);
+  box-shadow:
+    0 -8px 8px -6px transparent inset,
+    0 -16px 16px -8px transparent inset,
+    1px 1px 1px color-mix(in srgb, var(--surface-1) 14%, transparent),
+    2px 2px 2px color-mix(in srgb, var(--surface-1) 8%, transparent),
+    -1px -1px 1px rgba(26, 18, 37, 0.12),
+    -2px -2px 2px rgba(26, 18, 37, 0.08);
+}
+
+.oracle-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(
+    0deg,
+    var(--surface-1),
+    var(--accent-light),
+    color-mix(in srgb, var(--accent-light) 52%, transparent),
+    8%,
+    transparent
+  );
+  background-position: 0 0;
+  opacity: 0;
+  transition:
+    opacity var(--transition),
+    filter var(--transition);
+}
+
+.oracle-button-letter {
+  position: relative;
+  display: inline-block;
+  color: color-mix(in srgb, var(--surface-2) 42%, transparent);
+  animation: oracle-btn-letter-anim 2s ease-in-out infinite;
+  transition:
+    color var(--transition),
+    text-shadow var(--transition),
+    opacity var(--transition);
+}
+
+/* Wider pause after each word (space glyph spans in Navbar oracle CTA) */
+.oracle-button-letter--gap {
+  margin-right: 0.26em;
+}
+
+@keyframes oracle-btn-letter-anim {
+  50% {
+    text-shadow: 0 0 3px color-mix(in srgb, var(--accent-light) 65%, transparent);
+    color: var(--surface-1);
+  }
+}
+
+.oracle-button-svg {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  fill: var(--ink-200);
+  animation: oracle-btn-flicker 2s linear infinite;
+  animation-delay: 0.5s;
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--surface-1) 55%, transparent));
+  transition:
+    fill var(--transition),
+    filter var(--transition),
+    opacity var(--transition);
+}
+
+@keyframes oracle-btn-flicker {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.oracle-button-txt-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 1.25em;
+}
+
+.oracle-button-txt {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  word-spacing: -0.06em;
+  white-space: nowrap;
+}
+
+.oracle-button-txt-1 {
+  animation: oracle-btn-appear-anim 1s ease-in-out forwards;
+}
+
+.oracle-button-txt-2 {
+  opacity: 0;
+}
+
+@keyframes oracle-btn-appear-anim {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.oracle-button:focus .oracle-button-txt-1 {
+  animation: oracle-btn-opacity-anim 0.3s ease-in-out forwards;
+  animation-delay: 1s;
+}
+
+.oracle-button:focus .oracle-button-txt-2 {
+  animation: oracle-btn-opacity-anim 0.3s ease-in-out reverse forwards;
+  animation-delay: 1s;
+}
+
+@keyframes oracle-btn-opacity-anim {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.oracle-button:focus .oracle-button-letter {
+  animation:
+    oracle-btn-focused-letter-anim 1s ease-in-out forwards,
+    oracle-btn-letter-anim 1.2s ease-in-out infinite;
+  animation-delay: 0s, 1s;
+}
+
+@keyframes oracle-btn-focused-letter-anim {
+  0%,
+  100% {
+    filter: blur(0px);
+  }
+  50% {
+    transform: scale(2);
+    filter: blur(10px) brightness(150%)
+      drop-shadow(-36px 12px 12px color-mix(in srgb, var(--accent-light) 85%, transparent));
+  }
+}
+
+.oracle-button:focus .oracle-button-svg {
+  animation-duration: 1.2s;
+  animation-delay: 0.2s;
+}
+
+.oracle-button:focus::before {
+  box-shadow:
+    0 -8px 12px -6px color-mix(in srgb, var(--surface-1) 22%, transparent) inset,
+    0 -16px 16px -8px color-mix(in srgb, var(--accent-light) 22%, transparent) inset,
+    1px 1px 1px color-mix(in srgb, var(--surface-1) 22%, transparent),
+    2px 2px 2px color-mix(in srgb, var(--surface-1) 8%, transparent),
+    -1px -1px 1px rgba(26, 18, 37, 0.12),
+    -2px -2px 2px rgba(26, 18, 37, 0.08);
+}
+
+.oracle-button:focus::after {
+  opacity: 0.6;
+  mask-image: linear-gradient(0deg, var(--surface-1), transparent);
+  filter: brightness(100%);
+}
+
+.oracle-button-letter:nth-child(1),
+.oracle-button:focus .oracle-button-letter:nth-child(1) {
+  animation-delay: 0s;
+}
+.oracle-button-letter:nth-child(2),
+.oracle-button:focus .oracle-button-letter:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.oracle-button-letter:nth-child(3),
+.oracle-button:focus .oracle-button-letter:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.oracle-button-letter:nth-child(4),
+.oracle-button:focus .oracle-button-letter:nth-child(4) {
+  animation-delay: 0.24s;
+}
+.oracle-button-letter:nth-child(5),
+.oracle-button:focus .oracle-button-letter:nth-child(5) {
+  animation-delay: 0.32s;
+}
+.oracle-button-letter:nth-child(6),
+.oracle-button:focus .oracle-button-letter:nth-child(6) {
+  animation-delay: 0.4s;
+}
+.oracle-button-letter:nth-child(7),
+.oracle-button:focus .oracle-button-letter:nth-child(7) {
+  animation-delay: 0.48s;
+}
+.oracle-button-letter:nth-child(8),
+.oracle-button:focus .oracle-button-letter:nth-child(8) {
+  animation-delay: 0.56s;
+}
+.oracle-button-letter:nth-child(9),
+.oracle-button:focus .oracle-button-letter:nth-child(9) {
+  animation-delay: 0.64s;
+}
+.oracle-button-letter:nth-child(10),
+.oracle-button:focus .oracle-button-letter:nth-child(10) {
+  animation-delay: 0.72s;
+}
+.oracle-button-letter:nth-child(11),
+.oracle-button:focus .oracle-button-letter:nth-child(11) {
+  animation-delay: 0.8s;
+}
+.oracle-button-letter:nth-child(12),
+.oracle-button:focus .oracle-button-letter:nth-child(12) {
+  animation-delay: 0.88s;
+}
+.oracle-button-letter:nth-child(13),
+.oracle-button:focus .oracle-button-letter:nth-child(13) {
+  animation-delay: 0.96s;
+}
+.oracle-button-letter:nth-child(14),
+.oracle-button:focus .oracle-button-letter:nth-child(14) {
+  animation-delay: 1.04s;
+}
+.oracle-button-letter:nth-child(15),
+.oracle-button:focus .oracle-button-letter:nth-child(15) {
+  animation-delay: 1.12s;
+}
+.oracle-button-letter:nth-child(16),
+.oracle-button:focus .oracle-button-letter:nth-child(16) {
+  animation-delay: 1.2s;
+}
+.oracle-button-letter:nth-child(17),
+.oracle-button:focus .oracle-button-letter:nth-child(17) {
+  animation-delay: 1.28s;
+}
+.oracle-button-letter:nth-child(18),
+.oracle-button:focus .oracle-button-letter:nth-child(18) {
+  animation-delay: 1.36s;
+}
+
+.oracle-button:active {
+  border: solid 1px color-mix(in srgb, var(--accent-light) 72%, transparent);
+  background-color: color-mix(in srgb, var(--accent) 38%, var(--ink-900));
+}
+
+.oracle-button:active::before {
+  box-shadow:
+    0 -8px 12px -6px color-mix(in srgb, var(--surface-1) 55%, transparent) inset,
+    0 -16px 16px -8px color-mix(in srgb, var(--accent-light) 58%, transparent) inset,
+    1px 1px 1px color-mix(in srgb, var(--surface-1) 28%, transparent),
+    2px 2px 2px color-mix(in srgb, var(--surface-1) 14%, transparent),
+    -1px -1px 1px rgba(26, 18, 37, 0.12),
+    -2px -2px 2px rgba(26, 18, 37, 0.08);
+}
+
+.oracle-button:active::after {
+  opacity: 1;
+  mask-image: linear-gradient(0deg, var(--surface-1), transparent);
+  filter: brightness(200%);
+}
+
+.oracle-button:active .oracle-button-letter {
+  text-shadow: 0 0 1px color-mix(in srgb, var(--accent-light) 85%, transparent);
+  animation: none;
+}
+
+.oracle-button:hover {
+  border: solid 1px color-mix(in srgb, var(--accent-light) 48%, transparent);
+}
+
+.oracle-button:hover::before {
+  box-shadow:
+    0 -8px 8px -6px color-mix(in srgb, var(--surface-1) 55%, transparent) inset,
+    0 -16px 16px -8px color-mix(in srgb, var(--accent-light) 32%, transparent) inset,
+    1px 1px 1px color-mix(in srgb, var(--surface-1) 14%, transparent),
+    2px 2px 2px color-mix(in srgb, var(--surface-1) 8%, transparent),
+    -1px -1px 1px rgba(26, 18, 37, 0.12),
+    -2px -2px 2px rgba(26, 18, 37, 0.08);
+}
+
+.oracle-button:hover::after {
+  opacity: 1;
+  mask-image: linear-gradient(0deg, var(--surface-1), transparent);
+}
+
+.oracle-button:hover .oracle-button-svg {
+  fill: var(--surface-1);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-light) 80%, transparent))
+    drop-shadow(0 -4px 6px rgba(26, 18, 37, 0.35));
+  animation: none;
+}
+
