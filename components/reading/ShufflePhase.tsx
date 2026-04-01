@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  useLayoutEffect,
   useRef,
   useSyncExternalStore,
 } from "react";
 import gsap from "gsap";
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
 import { useReadingAudio } from "@/components/reading/ReadingAudioProvider";
+import { useReactiveLayoutEffect } from "@/hooks/useReactiveLayoutEffect";
 import {
   SHUFFLE_PHASE_CARD_COUNT as CARD_COUNT,
   SHUFFLE_PHASE_DURATION as DURATION,
@@ -55,7 +55,7 @@ export function ShufflePhase({
     () => false,
   );
 
-  useLayoutEffect(() => {
+  useReactiveLayoutEffect(() => {
     if (reducedMotion) {
       if (isDrawComplete) queueMicrotask(() => onSettleCompleteRef.current());
       return;

@@ -4,13 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react";
 import { usePathname } from "next/navigation";
+import { useMountEffect } from "@/hooks/useMountEffect";
+import { useReactiveEffect } from "@/hooks/useReactiveEffect";
 import { ReadingAudioEngine } from "@/lib/reading-audio";
 
 function subscribeReducedMotion(cb: () => void) {
@@ -71,32 +72,10 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
   const soundAllowed = !reducedMotion;
   const soundAllowedRef = useRef(soundAllowed);
   soundAllowedRef.current = soundAllowed;
+  const portalEnteredRef = useRef(portalEntered);
+  portalEnteredRef.current = portalEntered;
 
-  useEffect(() => {
-    const e = getEngine();
-    void e.preload().then(() => setReady(e.isPreloaded));
-    return () => {
-      e.dispose();
-      engineRef.current = null;
-    };
-  }, [getEngine]);
-
-  useEffect(() => {
-    const e = engineRef.current;
-    if (!e) return;
-    e.setOutputEnabled(true);
-  }, []);
-
-  useEffect(() => {
-    const prev = prevPathRef.current;
-    prevPathRef.current = pathname;
-    if (prev === "/reading" && pathname !== "/reading") {
-      setPortalEntered(false);
-      engineRef.current?.stopAmbientLoop();
-    }
-  }, [pathname]);
-
-  useEffect(() => {
+  const syncAmbientLoop = useCallback(() => {
     const e = engineRef.current;
     if (!e) return;
     if (!soundAllowed || !portalEntered) {
@@ -107,6 +86,34 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
       e.startAmbientLoop();
     }
   }, [soundAllowed, portalEntered, ready]);
+
+  useMountEffect(() => {
+    const e = getEngine();
+    e.setOutputEnabled(true);
+    void e.preload().then(() => {
+      setReady(e.isPreloaded);
+      if (e.isPreloaded && soundAllowedRef.current && portalEnteredRef.current) {
+        e.startAmbientLoop();
+      }
+    });
+    return () => {
+      e.dispose();
+      engineRef.current = null;
+    };
+  });
+
+  useReactiveEffect(() => {
+    const prev = prevPathRef.current;
+    prevPathRef.current = pathname;
+    if (prev === "/reading" && pathname !== "/reading") {
+      setPortalEntered(false);
+      engineRef.current?.stopAmbientLoop();
+    }
+  }, [pathname]);
+
+  useReactiveEffect(() => {
+    syncAmbientLoop();
+  }, [syncAmbientLoop]);
 
   const beginAmbientFromReadingNav = useCallback(async () => {
     const e = getEngine();

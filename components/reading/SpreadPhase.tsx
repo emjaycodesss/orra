@@ -2,13 +2,13 @@
 
 import {
   useCallback,
-  useEffect,
   useRef,
   useState,
   useSyncExternalStore,
   type AnimationEvent,
   type CSSProperties,
 } from "react";
+import { useMountEffect } from "@/hooks/useMountEffect";
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
 import { useReadingAudio } from "@/components/reading/ReadingAudioProvider";
 import {
@@ -59,10 +59,37 @@ interface Props {
   onComplete: () => void;
 }
 
+interface SpreadDealAudioSchedulerProps {
+  reducedMotion: boolean;
+  audio: ReturnType<typeof useReadingAudio>;
+}
+
+function SpreadDealAudioScheduler({ reducedMotion, audio }: SpreadDealAudioSchedulerProps) {
+  useMountEffect(() => {
+    if (!audio) return;
+
+    audio.primeAudioForSpread();
+
+    const staggerSec = SPREAD_DEAL_STAGGER_MS / 1000;
+    const durationSec =
+      (reducedMotion ? SPREAD_DEAL_ANIMATION_REDUCED_MS : SPREAD_DEAL_ANIMATION_MS) / 1000;
+    const playbackRates = Array.from(
+      { length: CARD_COUNT },
+      (_, i) => 0.88 + stable01(91, i, 4) * 0.24,
+    );
+
+    audio.scheduleSpreadDealShuffleBed({ staggerSec, durationSec, playbackRates });
+
+    return () => {
+      audio.cancelSpreadDealSchedule();
+    };
+  });
+
+  return null;
+}
+
 export function SpreadPhase({ cardIndex, onComplete }: Props) {
   const readingAudio = useReadingAudio();
-  const readingAudioRef = useRef(readingAudio);
-  readingAudioRef.current = readingAudio;
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotion,
@@ -197,28 +224,6 @@ export function SpreadPhase({ cardIndex, onComplete }: Props) {
     [chosenSlot, zooming, stillnessMs, fireComplete],
   );
 
-  // One shuffle-bed hit per card on the Web Audio timeline: matches CSS stagger + deal duration.
-  useEffect(() => {
-    const audio = readingAudioRef.current;
-    if (!audio) return;
-
-    audio.primeAudioForSpread();
-
-    const staggerSec = SPREAD_DEAL_STAGGER_MS / 1000;
-    const durationSec =
-      (reducedMotion ? SPREAD_DEAL_ANIMATION_REDUCED_MS : SPREAD_DEAL_ANIMATION_MS) / 1000;
-    const playbackRates = Array.from(
-      { length: CARD_COUNT },
-      (_, i) => 0.88 + stable01(91, i, 4) * 0.24,
-    );
-
-    audio.scheduleSpreadDealShuffleBed({ staggerSec, durationSec, playbackRates });
-
-    return () => {
-      readingAudioRef.current?.cancelSpreadDealSchedule();
-    };
-  }, [reducedMotion]);
-
   const handleCardAnimationEnd = useCallback(
     (i: number) => (e: AnimationEvent<HTMLDivElement>) => {
       const n = e.animationName || "";
@@ -240,6 +245,12 @@ export function SpreadPhase({ cardIndex, onComplete }: Props) {
       className={`spread-phase ${reducedMotion ? "spread-phase--reduced" : ""}`}
       role="presentation"
     >
+      {/* Re-key so reduced-motion changes remount scheduler and preserve cancel/reschedule semantics. */}
+      <SpreadDealAudioScheduler
+        key={reducedMotion ? "spread-audio-reduced" : "spread-audio-default"}
+        reducedMotion={reducedMotion}
+        audio={readingAudio}
+      />
       <div className="spread-phase__header" ref={headerRef}>
         <div className="spread-phase__logo" aria-hidden>
           <ReadingApproachLogoLoader />

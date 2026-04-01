@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { useReactiveLayoutEffect } from "@/hooks/useReactiveLayoutEffect";
 import { createOrbitCanvas, type OrbitAnimState } from "@/lib/orbit-canvas";
 
 // Module-level flags so Strict Mode / remount doesn’t reset post-portal orbit physics.
@@ -41,7 +42,7 @@ export function ReadingOrbitLayer({
   );
 
   // One canvas per mount — don’t recreate on phase/prop churn.
-  useLayoutEffect(() => {
+  useReactiveLayoutEffect(() => {
     if (reducedMotion) return;
     const node = hostRef.current;
     if (!node) return;
@@ -59,7 +60,7 @@ export function ReadingOrbitLayer({
   }, [reducedMotion]);
 
   // Re-arm pre-portal physics only when ENTER appears again, not while it stays open.
-  useLayoutEffect(() => {
+  useReactiveLayoutEffect(() => {
     if (reducedMotion) return;
     const introPortal = showEnterOverlay && !overlayDismissed;
     if (introPortal && !wasIntroPortalRef.current) {

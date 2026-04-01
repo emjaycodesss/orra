@@ -4,13 +4,13 @@ import {
   createContext,
   useCallback,
   useContext,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { ReadingOrbitLayer } from "@/components/reading/ReadingOrbitLayer";
+import { useReactiveLayoutEffect } from "@/hooks/useReactiveLayoutEffect";
 
 export type ReadingOrbitBindings = {
   showEnterOverlay: boolean;
@@ -96,7 +96,7 @@ export function useRegisterReadingOrbitBindings({
     );
   }
 
-  useLayoutEffect(() => {
+  useReactiveLayoutEffect(() => {
     register({
       showEnterOverlay,
       softenForContent,

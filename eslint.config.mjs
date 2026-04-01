@@ -29,21 +29,13 @@ const eslintConfig = [
     },
   },
   {
-    // ShufflePhase — GSAP DOM sync; SpreadPhase — deal phase opens with layout-time audio kick.
-    files: ["components/reading/ShufflePhase.tsx", "components/reading/SpreadPhase.tsx"],
-    rules: {
-      "no-restricted-imports": "off",
-    },
-  },
-  {
-    files: ["components/reading/ReadingAudioProvider.tsx"],
-    rules: {
-      "no-restricted-imports": "off",
-    },
-  },
-  {
-    // Orbit canvas must attach before paint; shell registers bindings before paint to avoid ENTER flicker.
-    files: ["components/reading/ReadingOrbitLayer.tsx", "components/reading/ReadingOrbitShell.tsx"],
+    // Effect hooks are only imported directly in dedicated wrapper hooks.
+    files: [
+      "hooks/useMountEffect.ts",
+      "hooks/useMountLayoutEffect.ts",
+      "hooks/useReactiveEffect.ts",
+      "hooks/useReactiveLayoutEffect.ts",
+    ],
     rules: {
       "no-restricted-imports": "off",
     },
