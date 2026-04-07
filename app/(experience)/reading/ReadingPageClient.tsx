@@ -2,18 +2,18 @@
 
 import dynamic from "next/dynamic";
 import { useState, useCallback, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { loadPastReadingsForAddress } from "@/lib/reading-history-store";
 import { BrowserProvider, formatEther, type Eip1193Provider } from "ethers";
 
-import { History, X } from "lucide-react";
+import { History } from "lucide-react";
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
-import { useRegisterReadingOrbitBindings } from "@/components/reading/ReadingOrbitShell";
 import {
-  ReadingApproachReadyCta,
+  OracleBackGlyph,
   ReadingConnectInline,
-  ReadingConnectPrimary,
   ReadingHistoryBackCta,
+  ReadingOracleNavCta,
   ReadingOracleIconCards,
   ReadingOracleIconChevron,
   ReadingRitualOracleCta,
@@ -41,7 +41,6 @@ const EntropyProof = dynamic(() =>
 const MyReadings = dynamic(() =>
   import("@/components/reading/MyReadings").then((m) => m.MyReadings),
 );
-import { useReadingAudio } from "@/components/reading/ReadingAudioProvider";
 import { useOrraContract } from "@/hooks/useOrraContract";
 import { usePythStream } from "@/hooks/usePythStream";
 import { useOracleState } from "@/hooks/useOracleState";
@@ -61,9 +60,9 @@ import {
 } from "@/lib/orra-reading-storage";
 import { downloadReadingAsPng } from "@/lib/export-reading-png";
 import { devWarn } from "@/lib/dev-warn";
+import { useRegisterReadingOrbitBindings } from "@/components/reading/ReadingOrbitShell";
 
 type ReadingPhase =
-  | "intro"
   | "approach"
   | "questions"
   | "connect"
@@ -75,8 +74,8 @@ type ReadingPhase =
 type ReadingSurfaceTab = "reading" | "history";
 
 export default function ReadingPageClient() {
-  const readingAudio = useReadingAudio();
-  const [phase, setPhase] = useState<ReadingPhase>("intro");
+  const router = useRouter();
+  const [phase, setPhase] = useState<ReadingPhase>("questions");
   const [answers, setAnswers] = useState<OracleAnswers | null>(null);
   const [interpretation, setInterpretation] = useState("");
   const [waitingEpoch, setWaitingEpoch] = useState(0);
@@ -84,11 +83,21 @@ export default function ReadingPageClient() {
   const [pythAtCommit, setPythAtCommit] = useState<PythStreamData | null>(null);
   const { isConnected, address } = useAccount();
   const [surfaceTab, setSurfaceTab] = useState<ReadingSurfaceTab>("reading");
-  const [mobileHistoryView, setMobileHistoryView] = useState<'list' | 'detail'>('list');
+  const [surfaceTransitionPhase, setSurfaceTransitionPhase] = useState<"idle" | "out" | "in">(
+    "idle",
+  );
+  const [mobileHistoryView, setMobileHistoryView] = useState<"list" | "detail">("list");
   const [isDownloadingReading, setIsDownloadingReading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const contract = useOrraContract();
+
+  // Same orbit shell as `/portal` — keep canvas state; no ENTER overlay on this route.
+  const onOrbitPortalNoop = useCallback(() => {}, []);
+  useRegisterReadingOrbitBindings({
+    showEnterOverlay: false,
+    softenForContent: true,
+    onPortalEntered: onOrbitPortalNoop,
+  });
 
   const feedId = answers?.realmFeedId ?? 0;
   const rawPyth = usePythStream(feedId);
@@ -373,182 +382,86 @@ export default function ReadingPageClient() {
 
   const showPostReadingTabs = phase === "revealed";
 
+  const waitMs = useCallback((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)), []);
+
   const navigateSurface = useCallback(
-    (tab: ReadingSurfaceTab) => {
+    async (tab: ReadingSurfaceTab) => {
+      if (tab === surfaceTab || surfaceTransitionPhase !== "idle") return;
+      setSurfaceTransitionPhase("out");
+      await waitMs(180);
       setSurfaceTab(tab);
-      if (tab === "history" && phase === "intro") {
-        setPhase("approach");
-      }
       if (tab === "history" && address) {
-        setMobileHistoryView('list');
+        setMobileHistoryView("list");
         void loadPastReadingsForAddress(address);
       }
+      setSurfaceTransitionPhase("in");
+      await waitMs(170);
+      setSurfaceTransitionPhase("idle");
     },
-    [address, phase]
+    [address, surfaceTab, surfaceTransitionPhase, waitMs]
   );
-
-  const onReadingPortalEntered = useCallback(() => setPhase("approach"), []);
-  const onReadingEnterClick = useCallback(() => {
-    void readingAudio?.notifyEnterPortal();
-  }, [readingAudio]);
-
-  useRegisterReadingOrbitBindings({
-    showEnterOverlay: phase === "intro",
-    softenForContent: phase !== "intro",
-    onPortalEntered: onReadingPortalEntered,
-    onEnterClick: onReadingEnterClick,
-  });
 
   return (
     <>
-      {phase !== "intro" && (
-        <header
-          className="reading-fixed-util-header fixed left-4 right-4 top-0 z-[70] flex items-center justify-between gap-2 md:left-8 md:right-8"
-          aria-label="Reading utilities"
-        >
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-            {surfaceTab === "history" && (
-              <ReadingHistoryBackCta onClick={() => {
-                if (mobileHistoryView === 'detail') setMobileHistoryView('list');
+      <header
+        className="reading-fixed-util-header fixed left-4 right-4 top-0 z-[70] flex items-center justify-between gap-2 md:left-8 md:right-8"
+        aria-label="Reading utilities"
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+          {surfaceTab === "reading" && (
+            /* Fast escape hatch back to the portal path chooser (keeps wallet connected). */
+            <ReadingOracleNavCta
+              label="Back to Portal"
+              ariaLabel="Back to Portal"
+              compact
+              revealLabelOnHover
+              className="reading-nav-oracle-cta--no-pulse reading-nav-oracle-cta--portal-back"
+              glyph={<OracleBackGlyph />}
+              onClick={() => router.push("/portal")}
+            />
+          )}
+          {surfaceTab === "history" && (
+            <ReadingHistoryBackCta
+              onClick={() => {
+                if (mobileHistoryView === "detail") setMobileHistoryView("list");
                 else navigateSurface("reading");
-              }} />
-            )}
-            <button
-              type="button"
-              onClick={() => navigateSurface("history")}
-              className="group inline-flex items-center gap-1.5 px-0 py-1 text-[14px] font-medium text-ink-500 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:text-ink-900 hover:underline hover:underline-offset-4 hover:decoration-accent-light/70 focus-visible:-translate-y-0.5 focus-visible:text-ink-900 focus-visible:underline focus-visible:underline-offset-4 focus-visible:decoration-accent-light/70 active:translate-y-0 active:text-ink-700"
-              aria-label="Open past readings"
-            >
-              <History
-                className="h-4 w-4 text-ink-400 transition-colors duration-300 group-hover:text-ink-700 group-focus-visible:text-ink-700"
-                aria-hidden
-              />
-              Past Readings
-            </button>
-          </div>
-          <div className="shrink-0">
-            <ReadingWalletHeader />
-          </div>
-        </header>
-      )}
+              }}
+            />
+          )}
+          <button
+            type="button"
+            onClick={() => navigateSurface("history")}
+            className="group inline-flex items-center gap-1.5 px-0 py-1 text-[14px] font-medium text-ink-500 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:text-ink-900 hover:underline hover:underline-offset-4 hover:decoration-accent-light/70 focus-visible:-translate-y-0.5 focus-visible:text-ink-900 focus-visible:underline focus-visible:underline-offset-4 focus-visible:decoration-accent-light/70 active:translate-y-0 active:text-ink-700"
+            aria-label="Open past readings"
+          >
+            <History
+              className="h-4 w-4 text-ink-400 transition-colors duration-300 group-hover:text-ink-700 group-focus-visible:text-ink-700"
+              aria-hidden
+            />
+            Past Readings
+          </button>
+        </div>
+        <div className="shrink-0">
+          <ReadingWalletHeader />
+        </div>
+      </header>
       <main
         className={`relative z-10 ${
-          phase === "intro" || phase === "approach"
-            ? `reading-main--fill-viewport flex flex-col${phase === "intro" ? " pointer-events-none" : ""}`
+          phase === "questions" && surfaceTab === "reading"
+            ? "reading-main--fill-viewport flex flex-col"
             : ""
-        } ${phase !== "intro" ? "reading-main-below-util-header" : ""}`}
+        } reading-main-below-util-header`}
       >
-        {phase === "approach" && surfaceTab === "reading" && (
-          <div className="reading-approach-hero">
-            <div className="reading-approach-logo-shell">
-              <ReadingApproachLogoLoader />
-            </div>
-            <p
-              className="reading-approach-lede flex max-w-xl flex-col items-center gap-1.5 text-center font-sans text-lg font-light leading-relaxed text-ink-800 sm:gap-2 sm:text-xl"
-              style={{
-                animation: "fadeUp 2.2s cubic-bezier(0.16,1,0.3,1) forwards",
-                opacity: 0,
-              }}
-            >
-              <span className="block">Something brought you here.</span>
-              <span className="block">The oracle has been expecting you.</span>
-            </p>
-            {!isConnected ? (
-              <div className="flex flex-col items-center gap-3">
-                <p className="reading-approach-sub max-w-sm font-sans text-center text-[13px] font-medium leading-relaxed text-ink-600">
-                  Connect your wallet to be seen.
-                </p>
-                <ReadingConnectPrimary />
-              </div>
-            ) : (
-              <ReadingApproachReadyCta onClick={() => setPhase("questions")} />
-            )}
-            <button
-              type="button"
-              onClick={() => setIsHowItWorksOpen(true)}
-              className="text-[12px] font-medium text-ink-500 underline underline-offset-4 decoration-ink-300/70 transition-colors hover:text-ink-800 hover:decoration-ink-600"
-              aria-haspopup="dialog"
-              aria-expanded={isHowItWorksOpen}
-              aria-controls="how-it-works-modal"
-            >
-              How it works
-            </button>
-          </div>
-        )}
-
+        {(surfaceTab === "history" ||
+          (surfaceTab === "reading" && phase !== "approach")) && (
         <div
-          className={`fixed inset-0 z-[90] flex items-center justify-center px-4 backdrop-blur-[2px] transition-all duration-200 ease-out ${
-            isHowItWorksOpen
-              ? "bg-ink-900/45 opacity-100"
-              : "pointer-events-none bg-ink-900/0 opacity-0"
-          }`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="how-it-works-title"
-          aria-hidden={!isHowItWorksOpen}
-          id="how-it-works-modal"
-          onClick={() => setIsHowItWorksOpen(false)}
-        >
-          <div
-            className={`card-surface w-full max-w-2xl px-7 py-6 transition-all duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-8 sm:py-7 ${
-              isHowItWorksOpen
-                ? "translate-y-0 scale-100 opacity-100"
-                : "translate-y-2 scale-[0.985] opacity-0"
-            }`}
-            onClick={(event) => event.stopPropagation()}
-          >
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <p
-                    id="how-it-works-title"
-                    className="text-[10px] font-semibold tracking-[0.16em] uppercase text-ink-400"
-                  >
-                    how it works
-                  </p>
-                  <p className="text-[16px] font-medium text-ink-900 leading-snug">
-                    Verifiable draw pipeline
-                  </p>
-                  <p className="text-[12px] text-ink-500 leading-relaxed">
-                    One oracle snapshot hash + one entropy callback. Everything below can be independently verified on-chain.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsHowItWorksOpen(false)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-gradient-to-b from-white/26 to-white/10 text-ink-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-8px_14px_rgba(255,255,255,0.05),0_10px_24px_rgba(9,4,18,0.32)] backdrop-blur-xl transition-all duration-300 hover:border-white/45 hover:from-white/34 hover:to-white/16 hover:text-ink-900 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.55),inset_0_-10px_16px_rgba(255,255,255,0.08),0_12px_28px_rgba(9,4,18,0.36)] focus-visible:border-white/45 focus-visible:from-white/34 focus-visible:to-white/16 focus-visible:text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-400/55"
-                  aria-label="Close how it works modal"
-                >
-                  <X className="h-4 w-4" aria-hidden />
-                </button>
-              </div>
-              <ol className="mx-auto flex max-w-xl list-decimal flex-col gap-2 pl-5 text-[12px] text-ink-600 leading-relaxed">
-                <li className="text-left">
-                  You answer realm, stance, timeframe, and truth. These become the structured reading context.
-                </li>
-                <li className="text-left">
-                  On draw, Orra submits <span className="font-sans tabular text-[11px] text-ink-700">requestReading(feedId, oracleSnapshotHash)</span>; the hash commits the frozen Pyth fields.
-                </li>
-                <li className="text-left">
-                  Pyth Entropy fulfills the request in a callback tx and returns a 32-byte random value.
-                </li>
-                <li className="text-left">
-                  Card index is deterministic from that random value. Reversal uses bit 8:
-                  <span className="ml-1 font-sans tabular text-[11px] text-ink-700">((randomNumber {">>"} 8) % 2) == 1</span>
-                  means reversed; otherwise upright.
-                </li>
-                <li className="text-left">
-                  <span className="font-sans tabular text-[11px] text-ink-700">CardDrawn</span> emits sequence, oracle hash, card index, and randomness. Interpretation is generated afterward from your answers + drawn result + committed oracle context.
-                </li>
-              </ol>
-              <p className="mt-4 text-[11px] leading-relaxed text-ink-500">
-                Audit shortcut: verify request tx, callback tx, oracle snapshot hash, and raw feed inputs in the receipt. Matching values prove the draw path and reversal state.
-              </p>
-          </div>
-        </div>
-
-        {(surfaceTab === "history" || (phase !== "intro" && phase !== "approach")) && (
-        <div
-          className={`max-w-5xl mx-auto flex w-full min-h-0 flex-col px-4 sm:px-6 ${
+          className={`reading-surface-transition max-w-5xl mx-auto flex w-full min-h-0 flex-col px-4 sm:px-6 ${
+            surfaceTransitionPhase === "out"
+              ? "reading-surface-transition--out"
+              : surfaceTransitionPhase === "in"
+                ? "reading-surface-transition--in"
+                : ""
+          } ${
             surfaceTab === "history"
               ? "reading-history-scroll-host items-stretch gap-0 overflow-hidden"
               : " items-center gap-10 pb-16 pt-4"

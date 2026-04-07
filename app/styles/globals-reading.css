@@ -862,6 +862,27 @@
   height: 22px;
 }
 
+/* Full-width oracle rows (Entropy Arena MCQ / booster slots): left-aligned label, wraps like reading body copy */
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--block {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--block .reading-nav-oracle-cta-inner {
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--block .oracle-button-txt-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  align-content: flex-start;
+}
+
 .reading-page .oracle-button.reading-nav-oracle-cta.reading-entropy-proof-cta {
   min-height: 1.86rem;
   padding: 0.34rem 0.66rem;
@@ -926,6 +947,26 @@
   gap: 1rem;
 }
 
+.reading-page .reading-surface-transition {
+  transition:
+    opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform, filter;
+}
+
+.reading-page .reading-surface-transition--out {
+  opacity: 0;
+  transform: translateY(10px) scale(0.994);
+  filter: blur(1.2px);
+}
+
+.reading-page .reading-surface-transition--in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
 .reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal {
   width: 2.4rem;
   min-width: 2.4rem;
@@ -985,6 +1026,17 @@
 .reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--history-back:hover .oracle-button-txt-wrap,
 .reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--history-back:focus-visible .oracle-button-txt-wrap {
   width: 3.1rem;
+}
+
+/* Wider reveal variant for the "Back to Portal" CTA in `/reading` header. */
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--portal-back:hover,
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--portal-back:focus-visible {
+  width: 9.4rem;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--portal-back:hover .oracle-button-txt-wrap,
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--portal-back:focus-visible .oracle-button-txt-wrap {
+  width: 6.65rem;
 }
 
 @keyframes reading-nav-oracle-letter-anim {

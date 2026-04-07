@@ -40,7 +40,7 @@ export function Navbar({ children }: { children?: React.ReactNode }) {
             {datetime}
           </span>
           <Link
-            href="/reading"
+            href="/portal"
             prefetch
             className="oracle-button"
             aria-label="Seek the Cards"

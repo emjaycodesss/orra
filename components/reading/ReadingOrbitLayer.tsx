@@ -6,6 +6,9 @@ import { createOrbitCanvas, type OrbitAnimState } from "@/lib/orbit-canvas";
 
 // Module-level flags so Strict Mode / remount doesn’t reset post-portal orbit physics.
 const readingOrbitAnim: OrbitAnimState = { collapse: false, expanse: false };
+const ORBIT_STATE_STORAGE_KEY = "orra.readingOrbit.state.v1";
+const ORBIT_SEED_STORAGE_KEY = "orra.readingOrbit.seed.v1";
+const ORBIT_START_STORAGE_KEY = "orra.readingOrbit.startMs.v1";
 
 function subscribeReducedMotion(onChange: () => void) {
   const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -31,6 +34,8 @@ export function ReadingOrbitLayer({
   onEnterClick,
 }: ReadingOrbitLayerProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const orbitSeedRef = useRef<number>(Math.floor(Math.random() * 0xffffffff));
+  const orbitStartMsRef = useRef<number>(Date.now());
   // Reset physics only when intro (re)activates, not on unrelated layout (preserves ENTER hover).
   const wasIntroPortalRef = useRef(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
@@ -40,6 +45,49 @@ export function ReadingOrbitLayer({
     getReducedMotionSnapshot,
     () => false,
   );
+
+  const persistOrbitAnimState = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        ORBIT_STATE_STORAGE_KEY,
+        JSON.stringify({
+          collapse: readingOrbitAnim.collapse,
+          expanse: readingOrbitAnim.expanse,
+        }),
+      );
+    } catch {
+      // Best-effort persistence: ignore storage failures silently.
+    }
+  }, []);
+
+  useReactiveLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const savedState = window.localStorage.getItem(ORBIT_STATE_STORAGE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState) as Partial<OrbitAnimState>;
+        readingOrbitAnim.collapse = parsed.collapse === true;
+        readingOrbitAnim.expanse = parsed.expanse === true;
+      }
+      const savedSeedRaw = window.localStorage.getItem(ORBIT_SEED_STORAGE_KEY);
+      const savedSeed = savedSeedRaw == null ? Number.NaN : Number(savedSeedRaw);
+      if (Number.isFinite(savedSeed) && savedSeed > 0) {
+        orbitSeedRef.current = Math.floor(savedSeed);
+      } else {
+        window.localStorage.setItem(ORBIT_SEED_STORAGE_KEY, String(orbitSeedRef.current));
+      }
+      const savedStartRaw = window.localStorage.getItem(ORBIT_START_STORAGE_KEY);
+      const savedStart = savedStartRaw == null ? Number.NaN : Number(savedStartRaw);
+      if (Number.isFinite(savedStart) && savedStart > 0) {
+        orbitStartMsRef.current = Math.floor(savedStart);
+      } else {
+        window.localStorage.setItem(ORBIT_START_STORAGE_KEY, String(orbitStartMsRef.current));
+      }
+    } catch {
+      // Ignore storage parse/access errors and fall back to ephemeral values.
+    }
+  }, []);
 
   // One canvas per mount — don’t recreate on phase/prop churn.
   useReactiveLayoutEffect(() => {
@@ -52,7 +100,10 @@ export function ReadingOrbitLayer({
     canvas.className = "absolute inset-0 h-full w-full";
     node.appendChild(canvas);
 
-    const cleanup = createOrbitCanvas(canvas, node, () => readingOrbitAnim);
+    const cleanup = createOrbitCanvas(canvas, node, () => readingOrbitAnim, undefined, undefined, {
+      seed: orbitSeedRef.current,
+      startTimeMs: orbitStartMsRef.current,
+    });
 
     return () => {
       cleanup();
@@ -66,17 +117,19 @@ export function ReadingOrbitLayer({
     if (introPortal && !wasIntroPortalRef.current) {
       readingOrbitAnim.collapse = false;
       readingOrbitAnim.expanse = false;
+      persistOrbitAnimState();
     }
     wasIntroPortalRef.current = introPortal;
-  }, [showEnterOverlay, overlayDismissed, reducedMotion]);
+  }, [showEnterOverlay, overlayDismissed, reducedMotion, persistOrbitAnimState]);
 
   const handleEnterHoverChange = useCallback(
     (hovering: boolean) => {
       if (reducedMotion) return;
       if (!showEnterOverlay || overlayDismissed) return;
       readingOrbitAnim.collapse = hovering;
+      persistOrbitAnimState();
     },
-    [reducedMotion, showEnterOverlay, overlayDismissed],
+    [reducedMotion, showEnterOverlay, overlayDismissed, persistOrbitAnimState],
   );
 
   const handleEnter = useCallback(() => {
@@ -84,6 +137,7 @@ export function ReadingOrbitLayer({
     if (!reducedMotion) {
       readingOrbitAnim.collapse = true;
       readingOrbitAnim.expanse = true;
+      persistOrbitAnimState();
     }
     setOverlayDismissed(true);
     window.setTimeout(

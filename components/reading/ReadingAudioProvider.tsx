@@ -105,7 +105,9 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
   useReactiveEffect(() => {
     const prev = prevPathRef.current;
     prevPathRef.current = pathname;
-    if (prev === "/reading" && pathname !== "/reading") {
+    const wasRitual = prev === "/reading" || prev === "/portal";
+    const stillRitual = pathname === "/reading" || pathname === "/portal";
+    if (wasRitual && !stillRitual) {
       setPortalEntered(false);
       engineRef.current?.stopAmbientLoop();
     }

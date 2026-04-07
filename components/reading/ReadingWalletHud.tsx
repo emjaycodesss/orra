@@ -26,7 +26,8 @@ function OracleWalletGlyph() {
   );
 }
 
-function OracleReadyGlyph() {
+/** Check-in-circle; reused by ritual “ready” and other oracle CTAs (e.g. game / arena). */
+export function OracleReadyGlyph() {
   return (
     <svg
       className="oracle-button-svg"
@@ -36,6 +37,40 @@ function OracleReadyGlyph() {
     >
       <circle cx="12" cy="12" r="9.75" opacity={0.28} />
       <path d="M16.15 8.35 10.2 14.7 7.85 12.2 6.4 13.75l3.8 4.05 7.4-8.05-1.45-1.4z" />
+    </svg>
+  );
+}
+
+/** Compact dot for list-style oracle CTAs (e.g. multiple-choice rows). */
+export function OracleBulletGlyph() {
+  return (
+    <svg
+      className="oracle-button-svg"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="3.25" opacity={0.55} />
+      <circle cx="12" cy="12" r="1.35" opacity={0.95} />
+    </svg>
+  );
+}
+
+/** Simple X for false / cancel-style oracle CTAs outside the reading flow. */
+export function OracleCrossGlyph() {
+  return (
+    <svg
+      className="oracle-button-svg"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9.75" opacity={0.22} />
+      <path
+        fill="currentColor"
+        d="M9.35 8.3 12 10.94l2.65-2.64 1.05 1.05L13.05 12l2.65 2.65-1.05 1.05L12 13.06l-2.65 2.64-1.05-1.05L10.95 12 8.3 9.35l1.05-1.05z"
+        opacity={0.88}
+      />
     </svg>
   );
 }
@@ -57,7 +92,7 @@ function OracleDisconnectGlyph() {
   );
 }
 
-function OracleBackGlyph() {
+export function OracleBackGlyph() {
   return (
     <svg
       className="oracle-button-svg"
@@ -100,7 +135,8 @@ export function ReadingOracleIconCards() {
   );
 }
 
-function ReadingOracleNavCta({
+/** Letter-styled oracle CTA (same shell as ritual / wallet actions on `/reading`). */
+export function ReadingOracleNavCta({
   label,
   ariaLabel,
   onClick,
@@ -268,6 +304,7 @@ export function ReadingRitualOracleCta({
   compact = true,
   disabled,
   glyph,
+  className,
 }: {
   label: string;
   ariaLabel: string;
@@ -275,6 +312,7 @@ export function ReadingRitualOracleCta({
   compact?: boolean;
   disabled?: boolean;
   glyph: ReactNode;
+  className?: string;
 }) {
   return (
     <ReadingOracleNavCta
@@ -284,6 +322,7 @@ export function ReadingRitualOracleCta({
       compact={compact}
       disabled={disabled}
       glyph={glyph}
+      className={className}
     />
   );
 }

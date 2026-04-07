@@ -1,0 +1,20 @@
+[
+  {"id":"q1","type":"tf","stem":"Pyth Entropy v2 provides verifiable on-chain randomness for smart contracts.","topic":"entropy","tiers":[1,2,3],"answerBool":true},
+  {"id":"q2","type":"tf","stem":"Pyth price feeds require a single centralized publisher.","topic":"feeds","tiers":[1,2],"answerBool":false},
+  {"id":"q3","type":"tf","stem":"Confidence intervals in Pyth reflect uncertainty around the aggregate price.","topic":"feeds","tiers":[2,3],"answerBool":true},
+  {"id":"q4","type":"mcq","stem":"What does a consumer call to request randomness from Pyth Entropy on EVM?","topic":"entropy","tiers":[2,3],"options":["requestV2","rollDice","randomSeed","oraclePull"],"correctIndex":0},
+  {"id":"q5","type":"mcq","stem":"Which component aggregates publisher data into an on-chain price update?","topic":"feeds","tiers":[1,2,3],"options":["The user wallet","Pythnet / aggregation layer","Only MetaMask","The block explorer"],"correctIndex":1},
+  {"id":"q6","type":"tf","stem":"Benchmarks-style charts can be used to visualize historical Pyth prices.","topic":"benchmarks","tiers":[1,2,3],"answerBool":true},
+  {"id":"q7","type":"tf","stem":"Lower publisher count always means a feed is unusable.","topic":"feeds","tiers":[1,2],"answerBool":false},
+  {"id":"q8","type":"mcq","stem":"Entropy fees are typically paid in:","topic":"entropy","tiers":[2,3],"options":["USDC only","The chain native token (e.g. ETH)","PYTH token exclusively","Credit card"],"correctIndex":1},
+  {"id":"q9","type":"tf","stem":"Pull-model oracles let contracts fetch fresh prices when needed.","topic":"feeds","tiers":[1,2,3],"answerBool":true},
+  {"id":"q10","type":"mcq","stem":"In Orra, the tarot card index is derived from:","topic":"entropy","tiers":[2,3],"options":["block.timestamp only","Entropy randomness modulo 22","The user's birthday","Gas price"],"correctIndex":1},
+  {"id":"q11","type":"tf","stem":"Staleness of a price update matters for risk and settlement logic.","topic":"feeds","tiers":[1,2,3],"answerBool":true},
+  {"id":"q12","type":"mcq","stem":"Pyth Pro / Lazer-style streams are mainly aimed at:","topic":"pro","tiers":[2,3],"options":["Printing PDFs","Low-latency market data consumers","DNS resolution","Email"],"correctIndex":1},
+  {"id":"q13","type":"tf","stem":"The same feed ID should be used consistently when hashing an oracle snapshot.","topic":"feeds","tiers":[2,3],"answerBool":true},
+  {"id":"q14","type":"mcq","stem":"commit–reveal in Entropy helps prevent:","topic":"entropy","tiers":[3],"options":["Gas refunds","The provider learning the outcome before commitment resolves","SVG rendering","Wallet connection"],"correctIndex":1},
+  {"id":"q15","type":"tf","stem":"Cross-chain deployments of Pyth use chain-specific Entropy contract addresses.","topic":"entropy","tiers":[2,3],"answerBool":true},
+  {"id":"q16","type":"tf","stem":"Pyth is only for cryptocurrency prices.","topic":"feeds","tiers":[1],"answerBool":false},
+  {"id":"q17","type":"mcq","stem":"EMA fields in a feed stream can be used to compare spot vs smoothed price.","topic":"pro","tiers":[2,3],"options":["False","True","Only on Sundays","Only for NFTs"],"correctIndex":1},
+  {"id":"q18","type":"tf","stem":"Reading the Pyth documentation is a good way to verify integration assumptions.","topic":"meta","tiers":[1,2,3],"answerBool":true}
+]

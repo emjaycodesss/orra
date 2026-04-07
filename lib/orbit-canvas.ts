@@ -8,6 +8,13 @@ export interface OrbitPalette {
   star: [number, number, number];
 }
 
+export interface OrbitCanvasPersistence {
+  /** Stable random seed so star field geometry survives full page reloads. */
+  seed?: number;
+  /** Shared time origin so rotation phase continues after refresh. */
+  startTimeMs?: number;
+}
+
 const DEFAULT_PALETTE: OrbitPalette = {
   bg: [18, 9, 29],
   star: [210, 190, 255],
@@ -48,6 +55,7 @@ export function createOrbitCanvas(
   getAnim: () => OrbitAnimState,
   palette: OrbitPalette = DEFAULT_PALETTE,
   starCount = 1400,
+  persistence?: OrbitCanvasPersistence,
 ): () => void {
   const ctxMaybe = canvas.getContext("2d");
   if (!ctxMaybe) return () => {};
@@ -64,8 +72,20 @@ export function createOrbitCanvas(
   let centery = 0;
   const maxorbit = 255;
 
-  const startTime = Date.now();
+  const startTime = persistence?.startTimeMs ?? Date.now();
   let currentTime = 0;
+  const seededRandom = (() => {
+    const rawSeed = persistence?.seed;
+    if (rawSeed == null) return Math.random;
+    let t = (rawSeed >>> 0) || 1;
+    return () => {
+      // Mulberry32 PRNG: deterministic and tiny, good for reproducible visuals.
+      t += 0x6d2b79f5;
+      let r = Math.imul(t ^ (t >>> 15), 1 | t);
+      r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+      return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    };
+  })();
 
   type Star = {
     orbital: number;
@@ -101,7 +121,7 @@ export function createOrbitCanvas(
     g.lineCap = "round";
     stars.length = 0;
     for (let i = 0; i < starCount; i++) {
-      const rands = [Math.random() * (maxorbit / 2) + 1, Math.random() * (maxorbit / 2) + maxorbit];
+      const rands = [seededRandom() * (maxorbit / 2) + 1, seededRandom() * (maxorbit / 2) + maxorbit];
       const orbital = rands.reduce((p, c) => p + c, 0) / rands.length;
 
       let collapseBonus = orbital - maxorbit * 0.7;
@@ -115,14 +135,14 @@ export function createOrbitCanvas(
         x: centerx,
         y: centery + orbital,
         yOrigin: centery + orbital,
-        speed: (Math.floor(Math.random() * 2.5) + 1.5) * (Math.PI / 180),
+        speed: (Math.floor(seededRandom() * 2.5) + 1.5) * (Math.PI / 180),
         rotation: 0,
-        startRotation: (Math.floor(Math.random() * 360) + 1) * (Math.PI / 180),
+        startRotation: (Math.floor(seededRandom() * 360) + 1) * (Math.PI / 180),
         id: i,
         collapseBonus,
         color,
         hoverPos: centery + maxorbit / 2 + collapseBonus,
-        expansePos: centery + (i % 100) * -10 + (Math.floor(Math.random() * 20) + 1),
+        expansePos: centery + (i % 100) * -10 + (Math.floor(seededRandom() * 20) + 1),
         prevR: 0,
         prevX: centerx,
         prevY: centery + orbital,

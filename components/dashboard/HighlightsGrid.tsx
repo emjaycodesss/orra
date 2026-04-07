@@ -255,7 +255,7 @@ export function HighlightsGrid({ oracle, sparklineData, periodOpen, timeRange, a
           </span>
           <div className="mt-auto pt-4">
             <Link
-              href="/reading"
+              href="/portal"
               prefetch
               className="text-[13px] font-medium tracking-wide text-black transition-opacity duration-150 hover:opacity-80"
               onClick={() => {
