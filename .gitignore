@@ -9,6 +9,10 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 
+# Superpowers — plans/specs (local agent outputs; commit if you want them shared)
+docs/superpowers/plans/
+docs/superpowers/specs/
+
 # Skills & AI config
 skills-lock.json
 .claude/
@@ -35,3 +39,29 @@ coverage/
 
 # Cursor MCP — keep local; drop this line if you want `.mcp.json` committed for a shared setup
 .mcp.json
+
+# --- Production / local hygiene ---
+
+# Host-linked metadata can expose project IDs and account linkage in a clone or PR diff.
+.vercel/
+
+# Log files capture machine paths and transient errors; they clutter history and can leak context.
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Avoid committing private keys unless your team only vendors public certs (these extensions usually mean secret material).
+*.pem
+*.p12
+*.key
+
+# Cache and reports are regenerated locally or in CI; tracking them bloats the repo and causes merge noise.
+.turbo/
+playwright-report/
+test-results/
+.eslintcache
+
+# Foundry workflows conventionally put funded deployer secrets here; keep them off remotes by default.
+contracts/.env
