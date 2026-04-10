@@ -37,10 +37,13 @@ class TickerStripStore {
   private historicalFetched = false;
   private hermesFallbackDone = false;
   private cachedSnapshot: TickerFeed[] = EMPTY_FEEDS;
+  /** Tear down `/api/pyth-ticker` SSE while hidden so other tabs/routes can use the connection pool. */
+  private pausedByVisibility = false;
 
   subscribe = (listener: Listener) => {
+    installTickerVisibilityBridge();
     this.listeners.add(listener);
-    if (!this.eventSource) this.connect();
+    if (!this.eventSource && !this.pausedByVisibility) this.connect();
     return () => {
       this.listeners.delete(listener);
       if (this.listeners.size === 0) this.disconnect();
@@ -52,8 +55,20 @@ class TickerStripStore {
   private static SERVER_SNAPSHOT: TickerFeed[] = EMPTY_FEEDS;
   getServerSnapshot = (): TickerFeed[] => TickerStripStore.SERVER_SNAPSHOT;
 
+  pauseForDocumentHidden() {
+    this.pausedByVisibility = true;
+    this.disconnect();
+  }
+
+  resumeIfNeeded() {
+    if (!this.pausedByVisibility) return;
+    this.pausedByVisibility = false;
+    if (this.listeners.size > 0) this.connect();
+  }
+
   private connect() {
     if (typeof window === "undefined") return;
+    if (this.pausedByVisibility) return;
     this.disconnect();
 
     const es = new EventSource("/api/pyth-ticker");
@@ -193,6 +208,16 @@ class TickerStripStore {
 }
 
 const tickerStore = new TickerStripStore();
+
+let tickerVisibilityBridgeInstalled = false;
+function installTickerVisibilityBridge() {
+  if (tickerVisibilityBridgeInstalled || typeof document === "undefined") return;
+  tickerVisibilityBridgeInstalled = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) tickerStore.pauseForDocumentHidden();
+    else tickerStore.resumeIfNeeded();
+  });
+}
 
 export function useTickerStrip(): TickerFeed[] {
   return useSyncExternalStore(

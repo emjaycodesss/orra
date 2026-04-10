@@ -22,7 +22,7 @@ export function SparklineRangeToggle({ value, onChange }: Props) {
 
   return (
     <div
-      className="relative inline-grid grid-flow-col overflow-hidden"
+      className="relative overflow-hidden"
       role="group"
       aria-label="Chart time range"
       style={{
@@ -30,6 +30,9 @@ export function SparklineRangeToggle({ value, onChange }: Props) {
         borderRadius: 12,
         background: "var(--surface-2)",
         border: "1px solid var(--surface-3)",
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gap: 0,
       }}
     >
       <div

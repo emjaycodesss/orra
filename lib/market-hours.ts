@@ -1,12 +1,5 @@
 import type { AssetClass } from "./asset-class";
 
-interface SessionState {
-  tokyo: boolean;
-  london: boolean;
-  newYork: boolean;
-  sydney: boolean;
-}
-
 interface MarketSnapshot {
   open: boolean;
   label: "Open" | "Closed" | "Pre-market" | "After-hours";
@@ -120,24 +113,6 @@ function formatDuration(totalMinutes: number): string {
   if (days > 0) return `${days}d ${hours}h ${minutes}m`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
-}
-
-export function isMarketOpen(assetClass: AssetClass, now: Date = new Date()): boolean {
-  return marketSnapshot(assetClass, now).open;
-}
-
-export function getActiveSession(now: Date = new Date()): SessionState {
-  const minute = minutesSinceMidnight(now.getUTCHours(), now.getUTCMinutes());
-  const inRange = (start: number, end: number) => {
-    if (start <= end) return minute >= start && minute < end;
-    return minute >= start || minute < end;
-  };
-  return {
-    sydney: inRange(21 * 60, 6 * 60),
-    tokyo: inRange(0, 9 * 60),
-    london: inRange(8 * 60, 17 * 60),
-    newYork: inRange(13 * 60, 22 * 60),
-  };
 }
 
 export function getMarketStatus(

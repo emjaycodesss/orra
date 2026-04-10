@@ -24,7 +24,7 @@ const DashboardLoadedCharts = dynamic(
   { loading: () => <DashboardSkeleton /> },
 );
 
-// Idle prefetch for charts chunk (module scope avoids eslint restricted-imports on dynamic path).
+/** Prefetch charts chunk on idle — top-level import avoids eslint `restricted-imports` on the dynamic path. */
 function scheduleDashboardChartsChunkPrefetch() {
   const load = () => {
     void import("@/components/dashboard/DashboardLoadedCharts");
@@ -75,7 +75,7 @@ export default function DashboardPageClient() {
   const elapsedSinceSwitchMs = Math.max(0, nowMs - switchedAtRef.current);
   const noDataTimeoutExpired = elapsedSinceSwitchMs >= 8000;
   const sparklineResolved = sparklineStatus === "ready" || sparklineStatus === "empty";
-  // Show grid on sparkline price if live SSE is slow (3s).
+  /** If live SSE is still empty after 3s, show sparkline close in the price grid. */
   const LIVE_ORACLE_FALLBACK_MS = 3000;
   const liveOracleFallbackExpired = elapsedSinceSwitchMs >= LIVE_ORACLE_FALLBACK_MS;
   const liveOracleReady =

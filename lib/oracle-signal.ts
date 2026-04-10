@@ -1,6 +1,6 @@
 import type { OracleState, SignalClarity } from "@/lib/oracleState";
 
-export interface DashboardOracleSignal {
+interface DashboardOracleSignal {
   label: string;
   description: string;
   glow: string;
@@ -119,7 +119,7 @@ function joinTwoSentences(a: string, b: string): string {
   return `${t(a)} ${t(b)}`.trim();
 }
 
-export interface DashboardOracleSignalOptions {
+interface DashboardOracleSignalOptions {
   rangeLabel: string;
   symbolKey?: string;
 }

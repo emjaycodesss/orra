@@ -210,7 +210,6 @@ function OrderBookSkeleton() {
         </div>
       </div>
       <div className="mt-3 space-y-3 pt-1">
-        {/* Shimmer stand-in for dashed spread separator (see HighlightsGrid order book) */}
         <SkelBone shape="divider" className="h-[2px] w-full" />
         <div className="flex items-center justify-between">
           <SkelBone className="h-3 w-14" />

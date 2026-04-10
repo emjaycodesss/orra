@@ -64,7 +64,7 @@ function loadSymbols(): Promise<void> {
   return fetchPromise;
 }
 
-// Defer catalog prefetch until idle so first paint competes less with history + SSE on the dashboard.
+/** Prefetch symbol catalog on idle so first paint is not competing with history + SSE. */
 function scheduleSymbolCatalogPrefetch() {
   const run = () => {
     void loadSymbols();

@@ -1,5 +1,3 @@
-import type { MarketSession } from "./oracleState";
-
 export type AssetClass = "crypto" | "equity" | "fx" | "metal" | "commodity";
 
 export function inferAssetClass(symbol: string): AssetClass {
@@ -25,24 +23,4 @@ export function inferAssetClass(symbol: string): AssetClass {
   if (fxBases.has(base)) return "fx";
   if (cryptoBases.has(base)) return "crypto";
   return "equity";
-}
-
-export function assetClassLabel(assetClass: AssetClass): string {
-  if (assetClass === "fx") return "FX";
-  return assetClass.toUpperCase();
-}
-
-export function marketStateLabel(
-  assetClass: AssetClass,
-  hasLiveOracle: boolean,
-  marketSession: MarketSession,
-  isStale: boolean
-): string {
-  if (assetClass === "crypto") return "24/7";
-  if (!hasLiveOracle) return "Feed pending";
-  if (isStale) return "Feed quiet";
-  if (marketSession === "closed") return "Market closed";
-  if (marketSession === "regular") return "Market open";
-  if (marketSession === "preMarket") return "Pre-market";
-  return "After hours";
 }

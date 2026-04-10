@@ -10,7 +10,7 @@ import type {
 } from "@/hooks/useSparkline";
 import type { OracleState, PythStreamData } from "@/lib/oracleState";
 
-export interface DashboardLoadedChartsProps {
+interface DashboardLoadedChartsProps {
   oracle: OracleState;
   assetName: string;
   periodOpen: number;

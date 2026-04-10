@@ -3,7 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { PythStreamData } from "@/lib/oracleState";
 
-export interface ConfidencePoint {
+interface ConfidencePoint {
   t: number;
   conf: number;
   price: number;
