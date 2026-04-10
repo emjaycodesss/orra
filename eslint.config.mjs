@@ -13,6 +13,7 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals"),
   {
     rules: {
+      "no-console": "error",
       "no-restricted-imports": [
         "error",
         {
@@ -28,11 +29,22 @@ const eslintConfig = [
       ],
     },
   },
+  // Legacy/env-gated logging; prefer structured helpers in new code.
+  {
+    files: [
+      "lib/api-observability.ts",
+      "lib/dev-warn.ts",
+      "scripts/**/*.mjs",
+      "app/api/interpret/route.ts",
+    ],
+    rules: {
+      "no-console": "off",
+    },
+  },
   {
     // Effect hooks are only imported directly in dedicated wrapper hooks.
     files: [
       "hooks/useMountEffect.ts",
-      "hooks/useMountLayoutEffect.ts",
       "hooks/useReactiveEffect.ts",
       "hooks/useReactiveLayoutEffect.ts",
     ],

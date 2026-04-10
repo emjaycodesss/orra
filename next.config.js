@@ -10,6 +10,11 @@ const nextConfig = {
         hostname: "s2.coinmarketcap.com",
         pathname: "/static/img/coins/**",
       },
+      {
+        protocol: "https",
+        hostname: "pbs.twimg.com",
+        pathname: "/**",
+      },
     ],
   },
   // Avoid wrong workspace root when multiple lockfiles exist (fixes tracing + odd dev bundler edge cases).
