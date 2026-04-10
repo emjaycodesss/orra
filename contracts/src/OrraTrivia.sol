@@ -5,10 +5,10 @@ import {IEntropyConsumer} from "@pythnetwork/entropy-sdk-solidity/IEntropyConsum
 import {IEntropyV2} from "@pythnetwork/entropy-sdk-solidity/IEntropyV2.sol";
 
 /**
- * @title OrraDuel
+ * @title OrraTrivia
  * @notice Draws three Major Arcana indices (0-21) per Entropy v2 request for quiz power-ups.
  */
-contract OrraDuel is IEntropyConsumer {
+contract OrraTrivia is IEntropyConsumer {
     IEntropyV2 public immutable entropy;
     address public immutable provider;
 
@@ -54,11 +54,22 @@ contract OrraDuel is IEntropyConsumer {
         PendingBoosters memory p = pendingBoosters[sequenceNumber];
         require(p.user != address(0), "Unknown sequence");
 
-        uint8 c0 = uint8(uint256(keccak256(abi.encodePacked(randomNumber, uint8(0))))) % 22;
-        uint8 c1 = uint8(uint256(keccak256(abi.encodePacked(randomNumber, uint8(1))))) % 22;
-        uint8 c2 = uint8(uint256(keccak256(abi.encodePacked(randomNumber, uint8(2))))) % 22;
+        uint32 drawn = 0;
+        uint8[3] memory cards;
+        uint8 cardCount = 0;
 
-        emit BoostersDrawn(sequenceNumber, p.user, c0, c1, c2, randomNumber, p.sessionSalt);
+        for (uint8 i = 0; i < 22 && cardCount < 3; i++) {
+            uint8 candidate = uint8(uint256(keccak256(abi.encodePacked(randomNumber, i)))) % 22;
+
+            uint32 mask = uint32(1) << candidate;
+            if ((drawn & mask) == 0) {
+                drawn |= mask;
+                cards[cardCount] = candidate;
+                cardCount++;
+            }
+        }
+
+        emit BoostersDrawn(sequenceNumber, p.user, cards[0], cards[1], cards[2], randomNumber, p.sessionSalt);
 
         delete pendingBoosters[sequenceNumber];
     }
