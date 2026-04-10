@@ -89,6 +89,11 @@ export default function GamePageClient() {
   const [feeWei, setFeeWei] = useState<bigint | null>(null);
   const devMockEnabled = process.env.NEXT_PUBLIC_ORRA_TRIVIA_DEV_MOCK === "1";
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  /**
+   * Bumps after `/api/game/leaderboard/submit` succeeds so `GameRecapPage` refetches the table.
+   * Without this, the recap's initial GET often finishes before the async submit persists the row.
+   */
+  const [leaderboardRefreshNonce, setLeaderboardRefreshNonce] = useState(0);
   /** Combo API result held until arena KO completes — keeps duel mounted and defers recap until merge. */
   const [comboPendingKo, setComboPendingKo] = useState<ComboPendingKo | null>(null);
   /**
@@ -252,6 +257,7 @@ export default function GamePageClient() {
     if (session?.phase !== "ended") {
       leaderboardSent.current = false;
       leaderboardSubmitInFlight.current = false;
+      setLeaderboardRefreshNonce(0);
       return;
     }
     const w = address ?? session.walletAddress;
@@ -269,6 +275,7 @@ export default function GamePageClient() {
           if (res.ok) {
             leaderboardSent.current = true;
             leaderboardSubmitInFlight.current = false;
+            setLeaderboardRefreshNonce((n) => n + 1);
             return;
           }
         } catch {}
@@ -875,6 +882,7 @@ export default function GamePageClient() {
             <GameRecapPage
               session={session}
               walletAddress={address ?? session.walletAddress}
+              leaderboardRefreshNonce={leaderboardRefreshNonce}
               onNewSession={() => void newSession()}
               onBackToPortal={() => void exitGameToPortal()}
             />

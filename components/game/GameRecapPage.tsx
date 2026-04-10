@@ -67,11 +67,17 @@ const LOSS_HEADLINES = [
 export function GameRecapPage({
   session,
   walletAddress,
+  leaderboardRefreshNonce = 0,
   onNewSession,
   onBackToPortal,
 }: {
   session: PublicSession;
   walletAddress: string | null;
+  /**
+   * Parent increments after a successful leaderboard submit so we refetch `/api/game/leaderboard`
+   * (the first fetch often races ahead of the POST).
+   */
+  leaderboardRefreshNonce?: number;
   onNewSession: () => void;
   onBackToPortal: () => void;
 }) {
@@ -126,7 +132,7 @@ export function GameRecapPage({
     return () => {
       cancelled = true;
     };
-  }, [session.runScore]);
+  }, [session.runScore, leaderboardRefreshNonce]);
 
   useReactiveEffect(() => {
     historyFetchAbortRef.current?.abort();
@@ -183,11 +189,13 @@ export function GameRecapPage({
   /**
    * Prefetch run history as soon as the recap has a wallet (not only when History tab opens).
    * Perceived latency drops because data is often ready before the user switches tabs.
+   * `leaderboardRefreshNonce` bumps after a successful `/api/game/leaderboard/submit` (which also
+   * inserts the run row); without refetching here, History can race the submit like the leaderboard tab.
    */
   useReactiveEffect(() => {
     if (!walletAddress) return;
     void loadPastRuns();
-  }, [walletAddress, loadPastRuns]);
+  }, [walletAddress, loadPastRuns, leaderboardRefreshNonce]);
 
   const iq = computePythIq(
     session.answerLog.map((e) => ({ correct: e.correct, bossIndex: e.bossIndex })),
