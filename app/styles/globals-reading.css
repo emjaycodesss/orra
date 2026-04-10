@@ -2265,7 +2265,7 @@
 
 /* Boss backgrounds — Applied to arena-scene for proper layering */
 .duel-area-container[data-boss-index="0"] .arena-scene {
-  background-image: url('/bosses/planck_bg.jpg');
+  background-image: url('/bosses/planck_bg.webp');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -2274,7 +2274,7 @@
 }
 
 .duel-area-container[data-boss-index="1"] .arena-scene {
-  background-image: url('/bosses/ktizz_bg.jpg');
+  background-image: url('/bosses/ktizz_bg.webp');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -2283,7 +2283,7 @@
 }
 
 .duel-area-container[data-boss-index="2"] .arena-scene {
-  background-image: url('/bosses/chop_bg.jpg');
+  background-image: url('/bosses/chop_bg.webp');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
