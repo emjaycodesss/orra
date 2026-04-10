@@ -3,7 +3,11 @@ import {
   loadLeaderboard,
   leaderboardStats,
   percentileBelow,
+  rankByScore,
 } from "@/lib/game/leaderboard-file";
+
+/** Leaderboard-backed stats must never be served from a stale static cache. */
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -19,6 +23,8 @@ export async function GET(req: Request) {
     Number.isFinite(score) && stats.meanScore > 0
       ? Math.round(((score - stats.meanScore) / stats.meanScore) * 100)
       : null;
+  const leaderboardRank =
+    Number.isFinite(score) && rows.length > 0 ? rankByScore(score, rows) : null;
 
   return NextResponse.json({
     meanScore: Math.round(stats.meanScore * 100) / 100,
@@ -26,6 +32,7 @@ export async function GET(req: Request) {
     submissionCount: stats.submissionCount,
     frontrunPct,
     deltaPct,
+    leaderboardRank,
     sampleReady: rows.length >= 20,
   });
 }

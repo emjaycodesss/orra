@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import gsap from "gsap";
 import { useReactiveLayoutEffect } from "@/hooks/useReactiveLayoutEffect";
 
@@ -31,6 +31,11 @@ interface AnimatedCounterProps {
  *   formatter={(n) => Math.round(n).toLocaleString()}
  * />
  * ```
+ *
+ * Note: formatter is intentionally excluded from the effect dependency array
+ * because it's only used for display formatting via the onUpdate callback,
+ * not for animation triggering. Including it would cause unnecessary re-animations
+ * when a parent component passes new function references.
  */
 export function AnimatedCounter({
   from,
@@ -40,17 +45,11 @@ export function AnimatedCounter({
   formatter = (n) => Math.round(n).toString(),
   className = "",
 }: AnimatedCounterProps) {
-  const elementRef = useRef<HTMLSpanElement>(null);
   const [displayValue, setDisplayValue] = useState(formatter(from));
 
   useReactiveLayoutEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    // Create an object with a value property to animate
     const obj = { value: from };
 
-    // Use GSAP to animate the value
     gsap.to(obj, {
       value: to,
       duration,
@@ -61,14 +60,13 @@ export function AnimatedCounter({
       ease: "power2.out",
     });
 
-    // Cleanup: kill any ongoing animation on this element
     return () => {
       gsap.killTweensOf(obj);
     };
-  }, [from, to, duration, delay, formatter]);
+  }, [from, to, duration, delay]);
 
   return (
-    <span ref={elementRef} className={className}>
+    <span className={className}>
       {displayValue}
     </span>
   );

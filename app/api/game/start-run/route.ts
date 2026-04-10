@@ -1,31 +1,23 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { startRun } from "@/lib/game/engine";
-import { readSessionFile, writeSessionFile } from "@/lib/game/fs-store";
-import { GAME_SESSION_COOKIE, stripSecretAnswers } from "@/lib/game/http-session";
+import { readSessionFile, writeSessionFileIfRevision } from "@/lib/game/fs-store";
+import { stripSecretAnswers } from "@/lib/game/http-session";
+import { parseJsonBody, requireGameSession } from "@/lib/game/api-route-helpers";
 
 export async function POST(req: Request) {
-  const jar = await cookies();
-  const id = jar.get(GAME_SESSION_COOKIE)?.value;
-  if (!id) {
-    return NextResponse.json({ error: "no_session" }, { status: 401 });
-  }
-  const session = await readSessionFile(id);
-  if (!session) {
-    return NextResponse.json({ error: "expired" }, { status: 401 });
-  }
+  const sessionResult = await requireGameSession();
+  if (sessionResult instanceof NextResponse) return sessionResult;
+  const { sessionId: id, session: initialSession } = sessionResult;
 
-  const xHandle = session.twitterHandle?.replace(/^@+/, "").trim();
-  if (!xHandle) {
+  const xHandle = initialSession.twitterHandle?.replace(/^@+/, "").trim();
+  const devMock = process.env.ORRA_TRIVIA_DEV_MOCK === "1";
+  if (!xHandle && !devMock) {
     return NextResponse.json({ error: "twitter_required" }, { status: 400 });
   }
 
-  let body: { walletAddress?: string; boosterIndices?: number[] };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody<{ walletAddress?: string; boosterIndices?: number[] }>(req);
+  if (parsed instanceof NextResponse) return parsed;
+  const body = parsed;
 
   const boosters = body.boosterIndices;
   if (!Array.isArray(boosters) || boosters.length !== 3) {
@@ -37,14 +29,29 @@ export async function POST(req: Request) {
     }
   }
 
-  let next = {
-    ...session,
-    walletAddress:
-      typeof body.walletAddress === "string" && body.walletAddress.startsWith("0x")
-        ? body.walletAddress
-        : session.walletAddress,
-  };
-  next = startRun(next, boosters);
-  await writeSessionFile(id, next);
-  return NextResponse.json({ session: stripSecretAnswers(next) });
+  let current = initialSession;
+  const maxAttempts = 3;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (current.phase === "running") {
+      return NextResponse.json({ session: stripSecretAnswers(current), duplicate: true });
+    }
+    let next = {
+      ...current,
+      walletAddress:
+        typeof body.walletAddress === "string" && body.walletAddress.startsWith("0x")
+          ? body.walletAddress
+          : current.walletAddress,
+    };
+    next = startRun(next, boosters);
+
+    const expectedRevision = current.revision ?? 0;
+    const wrote = await writeSessionFileIfRevision(id, next, expectedRevision);
+    if (wrote) {
+      return NextResponse.json({ session: stripSecretAnswers(next) });
+    }
+    const refreshed = await readSessionFile(id);
+    if (!refreshed) return NextResponse.json({ error: "expired" }, { status: 401 });
+    current = refreshed;
+  }
+  return NextResponse.json({ error: "write_conflict" }, { status: 409 });
 }

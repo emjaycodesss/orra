@@ -16,12 +16,13 @@ import { useReadingAudio } from "@/components/reading/ReadingAudioProvider";
 
 type PortalPhase = "intro" | "connect" | "pathChoose";
 
+/** Portal landing: wallet connect + path chooser. `view` query is case-insensitive (`Paths` still opens the chooser). */
 export default function PortalPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const readingAudio = useReadingAudio();
   const { isConnected } = useAccount();
-  const forcePathChooser = searchParams.get("view") === "paths";
+  const forcePathChooser = searchParams.get("view")?.toLowerCase() === "paths";
   const [phase, setPhase] = useState<PortalPhase>(() => (forcePathChooser ? "connect" : "intro"));
 
   const onPortalEntered = useCallback(() => setPhase("connect"), []);
@@ -51,8 +52,9 @@ export default function PortalPageClient() {
               label="Back to Dashboard"
               ariaLabel="Back to Dashboard"
               compact
+              /* Icon-only until hover/focus-visible; label stays in aria-label for SR + touch (focus ring). */
               revealLabelOnHover
-              className="reading-nav-oracle-cta--no-pulse"
+              className="reading-nav-oracle-cta--no-pulse reading-nav-oracle-cta--dashboard-back"
               glyph={<OracleBackGlyph />}
               onClick={() => router.push("/")}
             />
@@ -67,7 +69,9 @@ export default function PortalPageClient() {
           phase === "intro" || phase === "connect" || phase === "pathChoose"
             ? `reading-main--fill-viewport flex flex-col${phase === "intro" ? " pointer-events-none" : ""}`
             : ""
-        } ${phase !== "intro" ? "reading-main-below-util-header" : ""}`}
+        } ${phase !== "intro" ? "reading-main-below-util-header" : ""}${
+          phase === "pathChoose" ? " reading-main--path-choose" : ""
+        }`}
       >
         {showConnect && (
           <div className="reading-approach-hero">

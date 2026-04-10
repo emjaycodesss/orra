@@ -1,12 +1,13 @@
 import { useSyncExternalStore, useCallback } from "react";
 import { ethers } from "ethers";
 import { ORRA_ABI, ORRA_ADDRESS, BASE_RPC_URL } from "@/lib/contract";
-import { readOrraFee } from "@/lib/orra-fee";
+import { readOrraFee } from "@/lib/reading/orra-fee";
 import { deriveIsReversed } from "@/lib/cards";
+import { humanizeWalletWriteError, isWalletUserRejectedError } from "@/lib/wallet-write-error";
 
 type Listener = () => void;
 
-export interface OnChainReading {
+interface OnChainReading {
   cardIndex: number;
   sequenceNumber: bigint;
   feedId: number;
@@ -33,37 +34,14 @@ interface ReadingState {
 }
 
 function toHumanReadingError(error: unknown): { message: string; isTimeout: boolean } {
-  const asAny = error as {
-    code?: number | string;
-    shortMessage?: string;
-    reason?: string;
-    message?: string;
-    info?: { error?: { code?: number | string; message?: string } };
-  };
-  const message = error instanceof Error ? error.message : String(error);
-  const shortMessage = asAny?.shortMessage ?? "";
-  const reason = asAny?.reason ?? "";
-  const nestedCode = asAny?.info?.error?.code;
-  const code = asAny?.code;
-  const joined = `${message} ${shortMessage} ${reason}`.toLowerCase();
-
-  if (
-    code === "ACTION_REJECTED" ||
-    code === 4001 ||
-    nestedCode === 4001 ||
-    joined.includes("user rejected") ||
-    joined.includes("ethers-user-denied")
-  ) {
-    return {
-      message: "Transaction cancelled. No worries - your wallet rejected the request, so nothing was sent.",
-      isTimeout: false,
-    };
+  if (isWalletUserRejectedError(error)) {
+    return { message: humanizeWalletWriteError(error), isTimeout: false };
   }
-
+  const message = error instanceof Error ? error.message : String(error);
+  const joined = message.toLowerCase();
   if (joined.includes("timeout")) {
     return { message, isTimeout: true };
   }
-
   return { message, isTimeout: false };
 }
 

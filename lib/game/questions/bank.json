@@ -1,20 +1,1640 @@
 [
-  {"id":"q1","type":"tf","stem":"Pyth Entropy v2 provides verifiable on-chain randomness for smart contracts.","topic":"entropy","tiers":[1,2,3],"answerBool":true},
-  {"id":"q2","type":"tf","stem":"Pyth price feeds require a single centralized publisher.","topic":"feeds","tiers":[1,2],"answerBool":false},
-  {"id":"q3","type":"tf","stem":"Confidence intervals in Pyth reflect uncertainty around the aggregate price.","topic":"feeds","tiers":[2,3],"answerBool":true},
-  {"id":"q4","type":"mcq","stem":"What does a consumer call to request randomness from Pyth Entropy on EVM?","topic":"entropy","tiers":[2,3],"options":["requestV2","rollDice","randomSeed","oraclePull"],"correctIndex":0},
-  {"id":"q5","type":"mcq","stem":"Which component aggregates publisher data into an on-chain price update?","topic":"feeds","tiers":[1,2,3],"options":["The user wallet","Pythnet / aggregation layer","Only MetaMask","The block explorer"],"correctIndex":1},
-  {"id":"q6","type":"tf","stem":"Benchmarks-style charts can be used to visualize historical Pyth prices.","topic":"benchmarks","tiers":[1,2,3],"answerBool":true},
-  {"id":"q7","type":"tf","stem":"Lower publisher count always means a feed is unusable.","topic":"feeds","tiers":[1,2],"answerBool":false},
-  {"id":"q8","type":"mcq","stem":"Entropy fees are typically paid in:","topic":"entropy","tiers":[2,3],"options":["USDC only","The chain native token (e.g. ETH)","PYTH token exclusively","Credit card"],"correctIndex":1},
-  {"id":"q9","type":"tf","stem":"Pull-model oracles let contracts fetch fresh prices when needed.","topic":"feeds","tiers":[1,2,3],"answerBool":true},
-  {"id":"q10","type":"mcq","stem":"In Orra, the tarot card index is derived from:","topic":"entropy","tiers":[2,3],"options":["block.timestamp only","Entropy randomness modulo 22","The user's birthday","Gas price"],"correctIndex":1},
-  {"id":"q11","type":"tf","stem":"Staleness of a price update matters for risk and settlement logic.","topic":"feeds","tiers":[1,2,3],"answerBool":true},
-  {"id":"q12","type":"mcq","stem":"Pyth Pro / Lazer-style streams are mainly aimed at:","topic":"pro","tiers":[2,3],"options":["Printing PDFs","Low-latency market data consumers","DNS resolution","Email"],"correctIndex":1},
-  {"id":"q13","type":"tf","stem":"The same feed ID should be used consistently when hashing an oracle snapshot.","topic":"feeds","tiers":[2,3],"answerBool":true},
-  {"id":"q14","type":"mcq","stem":"commit–reveal in Entropy helps prevent:","topic":"entropy","tiers":[3],"options":["Gas refunds","The provider learning the outcome before commitment resolves","SVG rendering","Wallet connection"],"correctIndex":1},
-  {"id":"q15","type":"tf","stem":"Cross-chain deployments of Pyth use chain-specific Entropy contract addresses.","topic":"entropy","tiers":[2,3],"answerBool":true},
-  {"id":"q16","type":"tf","stem":"Pyth is only for cryptocurrency prices.","topic":"feeds","tiers":[1],"answerBool":false},
-  {"id":"q17","type":"mcq","stem":"EMA fields in a feed stream can be used to compare spot vs smoothed price.","topic":"pro","tiers":[2,3],"options":["False","True","Only on Sundays","Only for NFTs"],"correctIndex":1},
-  {"id":"q18","type":"tf","stem":"Reading the Pyth documentation is a good way to verify integration assumptions.","topic":"meta","tiers":[1,2,3],"answerBool":true}
+  {
+    "id": "q1",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth Entropy v2 provides verifiable on-chain randomness for smart contracts.",
+    "topic": "entropy",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "q2",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth price feeds require a single centralized publisher.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "q3",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Confidence intervals in Pyth reflect uncertainty around the aggregate price.",
+    "topic": "feeds",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "q4",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "What does a consumer call to request randomness from Pyth Entropy on EVM?",
+    "topic": "entropy",
+    "difficulty": 2,
+    "options": [
+      "requestV2",
+      "rollDice",
+      "randomSeed",
+      "oraclePull"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "id": "q5",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Which component aggregates publisher data into an on-chain price update?",
+    "topic": "feeds",
+    "difficulty": 1,
+    "options": [
+      "The user wallet",
+      "Pythnet aggregation layer",
+      "Only MetaMask",
+      "The block explorer"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "q6",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Benchmarks-style charts can be used to visualize historical Pyth prices.",
+    "topic": "benchmarks",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "q7",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Lower publisher count always means a feed is unusable.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "q8",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Entropy fees are typically paid in:",
+    "topic": "entropy",
+    "difficulty": 2,
+    "options": [
+      "USDC only",
+      "The chain native token (e.g. ETH)",
+      "PYTH token exclusively",
+      "Credit card"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "q9",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pull-model oracles let contracts fetch fresh prices when needed.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "q10",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Entropy V2 randomness is a good fit for which applications?",
+    "topic": "entropy",
+    "difficulty": 2,
+    "options": [
+      "Verifiable NFT mints, game outcomes, and fair lotteries",
+      "Only adjusting DNS TTL records",
+      "Replacing proof-of-work hashing entirely",
+      "Encrypting private emails off-chain"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "id": "q11",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Staleness of a price update matters for risk and settlement logic.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "q12",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Pyth Pro / Lazer-style streams are mainly aimed at:",
+    "topic": "pro",
+    "difficulty": 2,
+    "options": [
+      "Printing PDFs",
+      "Low-latency market data consumers",
+      "DNS resolution",
+      "Email"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "q13",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "The same feed ID should be used consistently when hashing an oracle snapshot.",
+    "topic": "feeds",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "q14",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "commit–reveal in Entropy helps prevent:",
+    "topic": "entropy",
+    "difficulty": 3,
+    "options": [
+      "Gas refunds",
+      "The provider learning the outcome before commitment resolves",
+      "SVG rendering",
+      "Wallet connection"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "q15",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Cross-chain deployments of Pyth use chain-specific Entropy contract addresses.",
+    "topic": "entropy",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "q16",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth is only for cryptocurrency prices.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "q17",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "EMA fields in a feed stream can be used to:",
+    "topic": "pro",
+    "difficulty": 2,
+    "options": [
+      "Disable the feed",
+      "Compare spot vs smoothed price",
+      "Rotate publisher keys",
+      "Reset confidence"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "q18",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Reading the Pyth documentation is a good way to verify integration assumptions.",
+    "topic": "meta",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "b0_001",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth Network aggregates prices from multiple independent publishers using a weighted median.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "b0_002",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "What is a Pyth feed ID?",
+    "topic": "feeds",
+    "difficulty": 1,
+    "options": [
+      "A human-readable ticker like BTC/USD",
+      "A 32-byte hex string uniquely identifying an asset",
+      "A sequential integer starting at 1",
+      "A Twitter handle"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b0_003",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth supports price feeds for equities, forex, and commodities in addition to crypto.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "b0_004",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Which oracle model does Pyth use?",
+    "topic": "feeds",
+    "difficulty": 1,
+    "options": [
+      "Push oracle — prices are always pushed on-chain",
+      "Pull oracle — contracts request prices when needed",
+      "Subscription oracle — monthly fee required",
+      "Whisper oracle — peer-to-peer gossip"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b0_005",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "A Pyth price feed's exponent field converts the raw integer price to a decimal.",
+    "topic": "feeds",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b0_006",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "What does a wider confidence interval in a Pyth feed typically indicate?",
+    "topic": "feeds",
+    "difficulty": 1,
+    "options": [
+      "Higher publisher count",
+      "Greater price uncertainty",
+      "Faster update speed",
+      "Lower gas cost"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b0_007",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Publishers submit prices to Pyth from their own proprietary data sources.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "b0_008",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "What happens if you use a stale Pyth price update in a DeFi protocol?",
+    "topic": "feeds",
+    "difficulty": 2,
+    "options": [
+      "Nothing — all prices are valid forever",
+      "Risk of executing trades at incorrect market prices",
+      "The contract auto-refreshes",
+      "The RPC node rejects the transaction"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b0_009",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pythnet is a separate blockchain that acts as Pyth's aggregation layer.",
+    "topic": "feeds",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b0_010",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Which best describes Pyth's confidence interval formula?",
+    "topic": "feeds",
+    "difficulty": 2,
+    "options": [
+      "price × publisher_count",
+      "confidence / |price| × 100",
+      "EMA price - spot price",
+      "bid - ask spread"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b0_011",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "A pull oracle like Pyth allows protocols to get an updated price on every transaction.",
+    "topic": "feeds",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "b1_001",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth provides an EMA (exponentially weighted moving average) price alongside the spot price.",
+    "topic": "pro",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b1_002",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "On latency-focused Pyth Pro dashboards, spot trading above the EMA is usually read as:",
+    "topic": "pro",
+    "difficulty": 2,
+    "options": [
+      "Bearish pressure (cool / risk-off palette)",
+      "Bullish momentum (warm / risk-on palette)",
+      "A broken feed that must be ignored",
+      "Proof the chain halted finality"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b1_003",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth's EMA confidence is typically more stable than the spot confidence interval.",
+    "topic": "pro",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b1_004",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "During violent market crashes, Pyth aggregate confidence intervals most often:",
+    "topic": "pro",
+    "difficulty": 2,
+    "options": [
+      "Widen so consumers see higher disagreement and uncertainty",
+      "Collapse to exactly zero by protocol rule",
+      "Freeze at the previous day's value forever",
+      "Switch to publishing only sports odds"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "id": "b1_005",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Real-world assets (RWA) such as US Treasury yields can be available on Pyth.",
+    "topic": "rwa",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b1_006",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "What does the best bid/ask spread on a Pyth Lazer stream indicate?",
+    "topic": "pro",
+    "difficulty": 2,
+    "options": [
+      "The gas price for the update",
+      "Market depth — the gap between buy and sell prices",
+      "The number of active publishers",
+      "The confidence interval in basis points"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b1_007",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Market session state (open/closed) is included in Pyth Pro / Lazer feed properties.",
+    "topic": "pro",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b2_001",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pyth Entropy v2 uses a commit-reveal scheme to prevent front-running of randomness outcomes.",
+    "topic": "entropy",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "b2_002",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "In Pyth Entropy v2, what initiates a randomness request on EVM chains?",
+    "topic": "entropy",
+    "difficulty": 3,
+    "options": [
+      "randomize()",
+      "requestV2()",
+      "getEntropy()",
+      "pullRandom()"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b2_003",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pyth Entropy fees are denominated in the chain's native gas token (e.g. ETH on Base).",
+    "topic": "entropy",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b2_004",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Pyth Benchmarks are built for which workflow?",
+    "topic": "benchmarks",
+    "difficulty": 3,
+    "options": [
+      "Streaming meme tickers only",
+      "Point-in-time historical price lookups for settlement and auditing",
+      "Mining new Layer 1 blocks",
+      "Hosting static JPEG galleries"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b2_005",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pyth Lazer (Pro) streams can deliver price updates at fixed rates as fast as 1000ms.",
+    "topic": "pro",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b2_006",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "The sequence number returned by Pyth Entropy's requestV2 is used to:",
+    "topic": "entropy",
+    "difficulty": 3,
+    "options": [
+      "Set the gas limit",
+      "Identify and track a specific randomness request",
+      "Encrypt the callback",
+      "Determine the publisher fee"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b2_007",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "In the commit-reveal scheme, the Entropy provider cannot know the random outcome before the reveal phase.",
+    "topic": "entropy",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "b2_008",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Pyth Entropy's getFeeV2() should be called before a randomness request to:",
+    "topic": "entropy",
+    "difficulty": 3,
+    "options": [
+      "Cancel existing requests",
+      "Determine the exact ETH fee required",
+      "Mint a sequencer token",
+      "Select the aggregation node"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b2_009",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pyth Lazer streams include properties like publisherCount and feedUpdateTimestamp.",
+    "topic": "pro",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "b2_010",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "When monitoring Pyth Lazer streams, engineers often flag a print as stale if feedUpdateTimestamp lags wall-clock by more than roughly:",
+    "topic": "pro",
+    "difficulty": 3,
+    "options": [
+      "1 second",
+      "5 seconds",
+      "30 seconds",
+      "5 minutes"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b2_011",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Multiple Entropy providers can coexist on the same chain with different fee structures.",
+    "topic": "entropy",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "b2_012",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Which channel string matches a typical fixed-interval Pyth Lazer subscription?",
+    "topic": "pro",
+    "difficulty": 3,
+    "options": [
+      "realtime@5ms",
+      "fixed_rate@1000ms",
+      "snapshot@block",
+      "push@always"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "b2_013",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pyth can tolerate roughly one-third of publishers being offline or malicious while still producing robust aggregates.",
+    "topic": "aggregation",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "b2_014",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "What is Pythnet's role in the Pyth ecosystem?",
+    "topic": "feeds",
+    "difficulty": 3,
+    "options": [
+      "A wallet for paying publisher fees",
+      "A separate blockchain acting as Pyth's aggregation layer",
+      "A block explorer for Entropy events",
+      "A frontend framework for oracle dashboards"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen0_tf_0",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth is a pull oracle: prices land on-chain when someone requests an update.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_1",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth relies on third-party scrapers copying public websites for prices.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "gen0_tf_2",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "On Solana, Pyth updates roughly every 400ms, near the chain block time.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_3",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "The PYTH token is mainly used for on-chain governance via the Pyth DAO.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_4",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth data is available on more than 50 blockchains.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_5",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth depends on a single publisher monopoly for each asset.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "gen0_tf_6",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "A printed price of $100 ± $0.05 encodes a confidence interval around fair value.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_7",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "The Pythians is the name of the official Pyth community.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_8",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "One company controls all Pyth price feeds end-to-end.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "gen0_tf_9",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Historical Pyth updates on-chain are permanently auditable.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_10",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pull oracles can be more gas-efficient than naive push-every-block models.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_11",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Major DeFi protocols use Pyth to secure large amounts of value.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_12",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "The original Pyth whitepaper dropped in 2021.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_13",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Publishers must demonstrate access to real trading data.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_14",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth supplies a smoothed EMA to reduce noise from tiny wicks.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_15",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth aggregation source code is open-source on GitHub.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_16",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Hermes is an API service for fetching Pyth prices to EVM and Move chains.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_17",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth's mission is to make financial market data available on-chain broadly.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_18",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth began on Solana for speed and low fees.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_19",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Publisher updates are cryptographically signed.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_20",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Pyth only works on Ethereum mainnet.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "gen0_tf_21",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Anyone can publish any price without accountability.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "gen0_tf_22",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Confidence intervals can widen when markets are chaotic.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": true
+  },
+  {
+    "id": "gen0_tf_23",
+    "bossIndex": 0,
+    "type": "tf",
+    "stem": "Feed IDs are opaque and should never be reused in code.",
+    "topic": "oracle",
+    "difficulty": 1,
+    "answerBool": false
+  },
+  {
+    "id": "gen0_mcq_24",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "What does it mean that Pyth is a pull oracle?",
+    "topic": "pull-oracle",
+    "difficulty": 1,
+    "options": [
+      "Validators push every price every block regardless of usage",
+      "Consumers fetch or include updates when they need fresh prices",
+      "Prices exist only off-chain and never reach contracts",
+      "Only the Pyth DAO can read prices"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen0_mcq_25",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Who typically publishes prices to Pyth?",
+    "topic": "publishers",
+    "difficulty": 1,
+    "options": [
+      "Anonymous forum users",
+      "Institutions and market makers with first-party trade flow",
+      "Only retail wallet addresses",
+      "NFT minters exclusively"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen0_mcq_26",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Roughly how fast do Pyth prices update on Solana?",
+    "topic": "speed",
+    "difficulty": 1,
+    "options": [
+      "Once per day",
+      "About every 400ms",
+      "Every 10 minutes",
+      "Only on Sundays"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen0_mcq_27",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "What is a primary on-chain use of the PYTH token?",
+    "topic": "token",
+    "difficulty": 1,
+    "options": [
+      "Paying all oracle gas on every chain",
+      "Governance over the Pyth DAO",
+      "Minting USDC",
+      "Replacing ETH as gas"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen0_mcq_28",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Pyth is designed to serve data across:",
+    "topic": "chains",
+    "difficulty": 1,
+    "options": [
+      "Only one L2",
+      "Many blockchains",
+      "Email inboxes",
+      "DNS roots only"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen0_mcq_29",
+    "bossIndex": 0,
+    "type": "mcq",
+    "stem": "Why does Pyth emphasize first-party publisher data?",
+    "topic": "trust",
+    "difficulty": 1,
+    "options": [
+      "It is cheaper than scraping",
+      "It comes from venues that actually trade the asset",
+      "It removes the need for signatures",
+      "It disables confidence intervals"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_tf_0",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth can cover US equities like TSLA during extended sessions.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_1",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth offers metals and energy commodity benchmarks.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_2",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Fast oracle marks can support large prediction-market style products.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_3",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Liquid staking tokens like jitoSOL can appear as Pyth feeds.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_4",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Confidence bands may widen during violent market moves.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_5",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth Pro targets institutional-grade, low-latency consumers.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_6",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "FX pairs such as EUR/USD can be priced on Pyth.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_7",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Wormhole is used to relay Pyth aggregates to other chains.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_8",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Tokenized T-bills and similar RWAs can have Pyth marks.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_9",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth Benchmarks support historical point-in-time lookups.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_10",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth lists hundreds of feeds across asset classes.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_11",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Equity indices like S&P 500 can be represented.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_12",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "If a publisher stops contributing, the feed can go stale.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_13",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Developers can enforce slippage using cross-publisher deviation.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_14",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "The same aggregate is intended to be consistent across supported chains.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_tf_15",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Pyth only lists two crypto assets total.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_16",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Lazer streams ignore bid and ask entirely.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_17",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "RWA feeds are impossible on Pyth.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_18",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "FX requires a centralized bank API key on-chain.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_19",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Benchmarks are only for meme coins.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_20",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Polymarket-style venues never care about oracle latency.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_21",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Extended-hours stock marks are useless for DeFi.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_22",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Wormhole is only for NFT images.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_23",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Publisher deviation rules are meaningless.",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": false
+  },
+  {
+    "id": "gen1_tf_24",
+    "bossIndex": 1,
+    "type": "tf",
+    "stem": "Trading terminals often map wider oracle confidence to stronger visual caution (blur, tint, or fog metaphors).",
+    "topic": "oracle",
+    "difficulty": 2,
+    "answerBool": true
+  },
+  {
+    "id": "gen1_mcq_25",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "What does a widening confidence interval often signal?",
+    "topic": "confidence",
+    "difficulty": 2,
+    "options": [
+      "Guaranteed arbitrage with no risk",
+      "Higher uncertainty or disagreement around the fair price",
+      "The feed is about to shut down forever",
+      "Gas prices fell to zero"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_26",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Pyth Pro / Lazer is primarily built for:",
+    "topic": "pro",
+    "difficulty": 2,
+    "options": [
+      "Printing paper tickets",
+      "Latency-sensitive, professional data consumers",
+      "DNS failover",
+      "Social media analytics"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_27",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Which asset class is explicitly in scope for Pyth alongside crypto?",
+    "topic": "breadth",
+    "difficulty": 2,
+    "options": [
+      "Only Pokemon cards",
+      "FX, equities, commodities, and more",
+      "Only weather",
+      "Only sports scores"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_28",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Wormhole's role in the Pyth stack is closest to:",
+    "topic": "wormhole",
+    "difficulty": 2,
+    "options": [
+      "Mining Bitcoin",
+      "Bridging aggregated results to destination chains",
+      "Replacing Solidity",
+      "Hosting Discord bots"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_29",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "A stale feed label usually means:",
+    "topic": "stale",
+    "difficulty": 2,
+    "options": [
+      "The price is guaranteed correct",
+      "Updates are too old or publishers are quiet",
+      "The asset delisted everywhere on Earth",
+      "Gas is free"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_30",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Benchmarks are useful when you need:",
+    "topic": "benchmarks",
+    "difficulty": 2,
+    "options": [
+      "A random meme GIF",
+      "A verifiable historical price at a timestamp",
+      "To disable signatures",
+      "To mine Dogecoin"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_31",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Cross-publisher deviation rules help protocols:",
+    "topic": "deviation",
+    "difficulty": 2,
+    "options": [
+      "Ignore all risk",
+      "Set guardrails when publishers disagree",
+      "Remove confidence intervals",
+      "Guarantee 100x leverage"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_32",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Tokenized Treasury exposure on-chain might use Pyth for:",
+    "topic": "rwa",
+    "difficulty": 2,
+    "options": [
+      "Random card draws",
+      "Marks and risk parameters",
+      "SMTP email",
+      "GPU rendering"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_33",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Why might identical aggregates appear on multiple chains?",
+    "topic": "consistency",
+    "difficulty": 2,
+    "options": [
+      "Magic duplication glitch",
+      "Single aggregation on Pythnet then delivery cross-chain",
+      "Each chain runs a different Excel file",
+      "Publishers mail USB sticks"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen1_mcq_34",
+    "bossIndex": 1,
+    "type": "mcq",
+    "stem": "Extended session equity marks help when:",
+    "topic": "equities",
+    "difficulty": 2,
+    "options": [
+      "Only weekend NFT sales matter",
+      "You need prices outside regular cash hours",
+      "Blockchains turn off at 5pm",
+      "Gas is denominated in euros only"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_tf_0",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Entropy V2 offers verifiable on-chain randomness.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_1",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Commit-reveal reduces provider front-running of outcomes.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_2",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pyth Lazer can target sub-100ms style delivery configurations.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_3",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Aggregation uses a median that drops obvious outliers.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_4",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pythnet is dedicated to oracle aggregation workloads.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_5",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Publishers can be weighted by historical accuracy and latency.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_6",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Lazer lets operators choose consensus thresholds like 3-of-N.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_7",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Far-from-median prints may be treated as outliers.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_8",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Final aggregates blend confidence information, not a naive median only.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_9",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Publisher latency is monitored to protect freshness.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_10",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "The design aims for robustness when some publishers misbehave.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_11",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Merkle proofs on Pythnet help verify delivered prices.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_12",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Entropy can power fair mints, combat, and lotteries.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_13",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Each feed has a unique identifier publishers and consumers agree on.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_14",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Jane Street, Virtu, and HRT are examples of serious liquidity sources.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": true
+  },
+  {
+    "id": "gen2_tf_15",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Entropy randomness is always predictable in advance.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_16",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Lazer only supports one fixed 10s cadence forever.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_17",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Outliers are always included with full weight no matter what.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_18",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Pythnet is the same chain as Bitcoin.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_19",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Publishers never sign their updates.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_20",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Median aggregation means the mean of two random numbers.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_21",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Entropy cannot be used for NFT mints.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_22",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Feed IDs are optional and cosmetic.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_23",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "BFT-style robustness is irrelevant to oracles.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_tf_24",
+    "bossIndex": 2,
+    "type": "tf",
+    "stem": "Lazer consensus thresholds are meaningless decoration.",
+    "topic": "oracle",
+    "difficulty": 3,
+    "answerBool": false
+  },
+  {
+    "id": "gen2_mcq_25",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Why does Entropy use commit-reveal?",
+    "topic": "entropy",
+    "difficulty": 3,
+    "options": [
+      "To increase gas for fun",
+      "So the provider cannot game the outcome after seeing user intent",
+      "To disable smart contracts",
+      "To store JPEGs on-chain"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_26",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Outlier prices in Pyth aggregation are typically:",
+    "topic": "aggregation",
+    "difficulty": 3,
+    "options": [
+      "Always averaged in equally",
+      "Dropped when far from the robust center",
+      "The only price used",
+      "Encrypted with AES"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_27",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Pyth Lazer latency targets are best described as:",
+    "topic": "lazer",
+    "difficulty": 3,
+    "options": [
+      "Postal mail speed",
+      "Ultra-low-latency streaming configurations",
+      "Annual reports",
+      "FTP batch files"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_28",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Publisher weighting may emphasize:",
+    "topic": "publishers",
+    "difficulty": 3,
+    "options": [
+      "Random Twitter polls",
+      "Historical accuracy and low latency",
+      "Only wallet age",
+      "Only token color"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_29",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Pythnet's main job is to:",
+    "topic": "pythnet",
+    "difficulty": 3,
+    "options": [
+      "Host Netflix",
+      "Aggregate and attest to oracle data before wider delivery",
+      "Mine proof-of-work",
+      "Replace DNS"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_30",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "A consensus threshold in Lazer helps:",
+    "topic": "lazer",
+    "difficulty": 3,
+    "options": [
+      "Guarantee infinite leverage",
+      "Tune how many publisher voices must agree for a print",
+      "Remove signatures",
+      "Disable Ethereum"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_31",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Merkle proofs in the Pyth stack support:",
+    "topic": "integrity",
+    "difficulty": 3,
+    "options": [
+      "Proving inclusion of price data roots of trust",
+      "3D rendering",
+      "SMTP",
+      "GPU overclocking"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_32",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Entropy is a fit for:",
+    "topic": "entropy",
+    "difficulty": 3,
+    "options": [
+      "Only static HTML sites",
+      "Fair randomness for games, mints, and lotteries",
+      "Only tax filings",
+      "Only DNS"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_33",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Feed IDs matter because:",
+    "topic": "feed-id",
+    "difficulty": 3,
+    "options": [
+      "They are cosmetic emojis",
+      "Consumers and contracts must refer to the exact asset channel",
+      "They replace private keys",
+      "They mine BTC"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "id": "gen2_mcq_34",
+    "bossIndex": 2,
+    "type": "mcq",
+    "stem": "Monitoring publisher latency helps:",
+    "topic": "latency",
+    "difficulty": 3,
+    "options": [
+      "Ignore stale risk",
+      "Keep delivery fast and flag sluggish sources",
+      "Print more USDT",
+      "Disable confidence intervals"
+    ],
+    "correctIndex": 1
+  }
 ]

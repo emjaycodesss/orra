@@ -1,32 +1,44 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { applyPowerUp } from "@/lib/game/engine";
-import { readSessionFile, writeSessionFile } from "@/lib/game/fs-store";
-import { GAME_SESSION_COOKIE, stripSecretAnswers } from "@/lib/game/http-session";
+import { readSessionFile, writeSessionFileIfRevision } from "@/lib/game/fs-store";
+import { stripSecretAnswers } from "@/lib/game/http-session";
+import { parseJsonBody, requireGameSession } from "@/lib/game/api-route-helpers";
 
+/** Apply arcana from `slot` (0–2). Judgement (XX) is passive — rejects with `passive_card` (matches engine). */
 export async function POST(req: Request) {
-  const jar = await cookies();
-  const id = jar.get(GAME_SESSION_COOKIE)?.value;
-  if (!id) {
-    return NextResponse.json({ error: "no_session" }, { status: 401 });
-  }
-  const session = await readSessionFile(id);
-  if (!session) {
-    return NextResponse.json({ error: "expired" }, { status: 401 });
-  }
+  const sessionResult = await requireGameSession();
+  if (sessionResult instanceof NextResponse) return sessionResult;
+  const { sessionId: id, session } = sessionResult;
 
-  let body: { slot?: number };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody<{ slot?: number }>(req);
+  if (parsed instanceof NextResponse) return parsed;
+  const body = parsed;
   const slot = body.slot;
   if (slot !== 0 && slot !== 1 && slot !== 2) {
     return NextResponse.json({ error: "slot" }, { status: 400 });
   }
 
-  const next = applyPowerUp(session, slot);
-  await writeSessionFile(id, next);
-  return NextResponse.json({ session: stripSecretAnswers(next) });
+  const selected = session.boosters[slot];
+  if (!selected) {
+    return NextResponse.json({ error: "slot" }, { status: 400 });
+  }
+  if (selected.majorIndex === 20) {
+    return NextResponse.json({ error: "passive_card" }, { status: 400 });
+  }
+
+  const maxAttempts = 3;
+  let current = session;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const expectedRevision = current.revision ?? 0;
+    const next = applyPowerUp(current, slot);
+    const wrote = await writeSessionFileIfRevision(id, next, expectedRevision);
+    if (wrote) {
+      return NextResponse.json({ session: stripSecretAnswers(next) });
+    }
+    const refreshed = await readSessionFile(id);
+    if (!refreshed) return NextResponse.json({ error: "expired" }, { status: 401 });
+    current = refreshed;
+  }
+
+  return NextResponse.json({ error: "write_conflict" }, { status: 409 });
 }

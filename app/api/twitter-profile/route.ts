@@ -1,6 +1,46 @@
 import { NextResponse } from "next/server";
+import { logApiError } from "@/lib/api-observability";
+import { normalizeAvatarUrl } from "@/lib/avatar-url";
 
 const TWEETIQ = "https://tweetiq.onrender.com/api/analyze/profile";
+const SYNDICATION = "https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names=";
+
+async function fetchSyndicationProfile(raw: string) {
+  try {
+    const res = await fetch(`${SYNDICATION}${encodeURIComponent(raw)}`, {
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+    });
+    if (!res.ok) {
+      return null;
+    }
+    let data: Array<{
+      name?: string;
+      screen_name?: string;
+      profile_image_url?: string;
+      profile_image_url_https?: string;
+    }> = [];
+    try {
+      const rawBody = await res.text();
+      if (!rawBody.trim()) {
+        return null;
+      }
+      data = JSON.parse(rawBody) as typeof data;
+    } catch (parseErr) {
+      return null;
+    }
+    const entry = Array.isArray(data) ? data[0] : null;
+    if (!entry) {
+      return null;
+    }
+    const name = entry.name?.trim() || `@${raw}`;
+    const picRaw = entry.profile_image_url_https?.trim() || entry.profile_image_url?.trim() || null;
+    const pic = normalizeAvatarUrl(picRaw);
+    return { name, pic };
+  } catch (err) {
+    logApiError("api/twitter-profile/syndication", err, { handle: raw });
+    return null;
+  }
+}
 
 export async function POST(req: Request) {
   let body: { username?: string };
@@ -16,7 +56,7 @@ export async function POST(req: Request) {
 
   try {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 12_000);
+    const t = setTimeout(() => ctrl.abort(), 25_000);
     const res = await fetch(TWEETIQ, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,31 +64,57 @@ export async function POST(req: Request) {
       signal: ctrl.signal,
     });
     clearTimeout(t);
-    if (!res.ok) {
+
+    if (res.ok) {
+      const j = (await res.json()) as Record<string, unknown>;
+
+      const profile = typeof j.profile === "object" && j.profile !== null ? (j.profile as Record<string, unknown>) : j;
+
+      const name =
+        (typeof profile.name === "string" && profile.name) ||
+        (typeof profile.displayName === "string" && profile.displayName) ||
+        (typeof profile.username === "string" && profile.username) ||
+        `@${raw}`;
+      const picRaw =
+        (typeof profile.profileImageUrl === "string" && profile.profileImageUrl) ||
+        (typeof profile.profileImageUrl400 === "string" && profile.profileImageUrl400) ||
+        (typeof profile.profile_image_url_https === "string" && profile.profile_image_url_https) ||
+        (typeof profile.profile_image_url === "string" && profile.profile_image_url) ||
+        (typeof profile.avatar === "string" && profile.avatar) ||
+        null;
+      const pic = normalizeAvatarUrl(picRaw);
       return NextResponse.json({
-        fallback: true,
+        fallback: false,
         handle: `@${raw}`,
-        displayName: `@${raw}`,
-        avatarUrl: null as string | null,
+        displayName: String(name),
+        avatarUrl: pic,
       });
     }
-    const j = (await res.json()) as Record<string, unknown>;
-    const name =
-      (typeof j.name === "string" && j.name) ||
-      (typeof j.displayName === "string" && j.displayName) ||
-      `@${raw}`;
-    const pic =
-      (typeof j.profile_image_url === "string" && j.profile_image_url) ||
-      (typeof j.profileImageUrl === "string" && j.profileImageUrl) ||
-      (typeof j.avatar === "string" && j.avatar) ||
-      null;
+    const fallback = await fetchSyndicationProfile(raw);
+    if (fallback) {
+      return NextResponse.json({
+        fallback: false,
+        handle: `@${raw}`,
+        displayName: fallback.name,
+        avatarUrl: fallback.pic,
+      });
+    }
     return NextResponse.json({
-      fallback: false,
+      fallback: true,
       handle: `@${raw}`,
-      displayName: String(name),
-      avatarUrl: pic,
+      displayName: `@${raw}`,
+      avatarUrl: null as string | null,
     });
   } catch {
+    const fallback = await fetchSyndicationProfile(raw);
+    if (fallback) {
+      return NextResponse.json({
+        fallback: false,
+        handle: `@${raw}`,
+        displayName: fallback.name,
+        avatarUrl: fallback.pic,
+      });
+    }
     return NextResponse.json({
       fallback: true,
       handle: `@${raw}`,

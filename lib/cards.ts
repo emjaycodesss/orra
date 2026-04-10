@@ -15,10 +15,6 @@ export function deriveIsReversed(randomNumber: string): boolean {
   return orientationBit === BigInt(1);
 }
 
-export function deriveCardOrientationFromRandom(randomNumber: string): CardOrientation {
-  return deriveIsReversed(randomNumber) ? "reversed" : "upright";
-}
-
 export const MAJOR_ARCANA: TarotCard[] = [
   {
     index: 0, name: "The Fool", image: "/cards/0-the-fool.webp",

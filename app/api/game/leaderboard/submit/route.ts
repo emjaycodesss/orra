@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { readSessionFile } from "@/lib/game/fs-store";
-import { GAME_SESSION_COOKIE } from "@/lib/game/http-session";
 import {
   appendLeaderboard,
   loadLeaderboard,
   type LeaderboardRow,
 } from "@/lib/game/leaderboard-file";
 import { computePythIq } from "@/lib/game/pythIq";
+import { insertGameRun } from "@/lib/db/game-runs";
+import {
+  normalizeWalletAddress,
+  parseJsonBody,
+  requireGameSession,
+} from "@/lib/game/api-route-helpers";
 
 function median(ns: number[]): number | null {
   if (ns.length === 0) return null;
@@ -17,40 +20,44 @@ function median(ns: number[]): number | null {
 }
 
 export async function POST(req: Request) {
-  const jar = await cookies();
-  const id = jar.get(GAME_SESSION_COOKIE)?.value;
-  if (!id) {
-    return NextResponse.json({ error: "no_session" }, { status: 401 });
-  }
-  const session = await readSessionFile(id);
-  if (!session || session.phase !== "ended") {
+  const sessionResult = await requireGameSession();
+  if (sessionResult instanceof NextResponse) return sessionResult;
+  const { session } = sessionResult;
+  if (session.phase !== "ended") {
     return NextResponse.json({ error: "not_ended" }, { status: 400 });
   }
 
-  let body: { walletAddress?: string; chainId?: number };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
-  const wallet = body.walletAddress?.toLowerCase();
-  if (!wallet || !wallet.startsWith("0x") || wallet.length !== 42) {
+  const parsed = await parseJsonBody<{ walletAddress?: string; chainId?: number }>(req);
+  if (parsed instanceof NextResponse) return parsed;
+  const wallet = normalizeWalletAddress(parsed.walletAddress);
+  if (!wallet) {
     return NextResponse.json({ error: "wallet" }, { status: 400 });
   }
-  if (session.walletAddress && session.walletAddress.toLowerCase() !== wallet) {
+  const sessionWallet = normalizeWalletAddress(session.walletAddress);
+  if (!sessionWallet) {
+    return NextResponse.json({ error: "wallet_missing_in_session" }, { status: 403 });
+  }
+  if (sessionWallet !== wallet) {
     return NextResponse.json({ error: "wallet_mismatch" }, { status: 403 });
   }
 
   const chainId =
-    typeof body.chainId === "number" && Number.isFinite(body.chainId)
-      ? body.chainId
+    typeof parsed.chainId === "number" && Number.isFinite(parsed.chainId)
+      ? parsed.chainId
       : 84532;
 
-  const runKey = `${session.id}:${session.createdAt}`;
+  /**
+   * `revision` increments on each persisted session write and is monotonic; it identifies
+   * each snapshot at run end. After start-run, each completed run gets a unique key
+   * `sessionId:revision` because ending a run bumps revision.
+   */
+  const runKey = `${session.id}:${session.revision ?? 0}`;
   const existing = await loadLeaderboard();
   if (existing.some((r) => r.id === runKey)) {
     return NextResponse.json({ ok: true, duplicate: true });
   }
+
+  const serverScore = Math.max(0, session.runScore ?? 0);
 
   const latencies = session.answerLog.map((e) => e.latencyMs).filter((n) => n > 0);
   const meanLat =
@@ -66,7 +73,7 @@ export async function POST(req: Request) {
   const row: LeaderboardRow = {
     id: runKey,
     wallet_address: wallet,
-    score: session.runScore,
+    score: serverScore,
     run_completed: session.bossesDefeated >= 3,
     display_name: session.displayName,
     twitter_handle: session.twitterHandle,
@@ -83,5 +90,30 @@ export async function POST(req: Request) {
   };
 
   await appendLeaderboard(row);
-  return NextResponse.json({ ok: true });
+
+  let runPersisted = true;
+  try {
+    const totalQuestions = session.answerLog.length;
+    const accuracy =
+      totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 10000) / 100
+        : null;
+    await insertGameRun({
+      id: runKey,
+      wallet_address: wallet,
+      display_name: session.displayName ?? null,
+      twitter_handle: session.twitterHandle ?? null,
+      avatar_url: null,
+      score: serverScore,
+      pyth_iq: iq,
+      accuracy,
+      bosses_reached: session.bossesReached,
+      won: session.bossesDefeated >= 3,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    runPersisted = false;
+  }
+
+  return NextResponse.json({ ok: true, runPersisted });
 }

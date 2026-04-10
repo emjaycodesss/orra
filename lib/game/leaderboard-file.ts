@@ -100,3 +100,12 @@ export function percentileBelow(score: number, rows: LeaderboardRow[]): number {
   const below = rows.filter((r) => r.score < score).length;
   return Math.round((100 * below) / rows.length);
 }
+
+/**
+ * Competition-style rank for a score against all submissions (1 = highest).
+ * Tied scores share the same rank.
+ */
+export function rankByScore(score: number, rows: LeaderboardRow[]): number | null {
+  if (rows.length === 0) return null;
+  return rows.filter((r) => r.score > score).length + 1;
+}
