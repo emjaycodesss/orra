@@ -15,6 +15,7 @@ export function getPool(): Pool {
     pool = new Pool({
       connectionString: url,
       max: Number(process.env.ORRA_PG_POOL_MAX ?? 10),
+      connectionTimeoutMillis: Number(process.env.ORRA_PG_CONNECTION_TIMEOUT_MS ?? 10_000),
     });
   }
   return pool;

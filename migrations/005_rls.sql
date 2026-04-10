@@ -19,6 +19,9 @@ ALTER TABLE orra_game_leaderboard FORCE ROW LEVEL SECURITY;
 ALTER TABLE orra_readings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orra_readings FORCE ROW LEVEL SECURITY;
 
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles FORCE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS game_sessions_isolation ON game_sessions;
 CREATE POLICY game_sessions_isolation ON game_sessions
   FOR ALL
@@ -77,12 +80,38 @@ CREATE POLICY orra_readings_wallet_delete ON orra_readings
     lower(wallet_address) = lower(nullif(current_setting('orra.wallet_address', true), ''))
   );
 
+DROP POLICY IF EXISTS user_profiles_wallet_select ON user_profiles;
+CREATE POLICY user_profiles_wallet_select ON user_profiles
+  FOR SELECT
+  USING (
+    lower(wallet_address) = lower(nullif(current_setting('orra.wallet_address', true), ''))
+  );
+
+DROP POLICY IF EXISTS user_profiles_wallet_write ON user_profiles;
+CREATE POLICY user_profiles_wallet_write ON user_profiles
+  FOR INSERT
+  WITH CHECK (
+    lower(wallet_address) = lower(nullif(current_setting('orra.wallet_address', true), ''))
+  );
+
+DROP POLICY IF EXISTS user_profiles_wallet_update ON user_profiles;
+CREATE POLICY user_profiles_wallet_update ON user_profiles
+  FOR UPDATE
+  USING (
+    lower(wallet_address) = lower(nullif(current_setting('orra.wallet_address', true), ''))
+  )
+  WITH CHECK (
+    lower(wallet_address) = lower(nullif(current_setting('orra.wallet_address', true), ''))
+  );
+
 REVOKE ALL ON game_sessions FROM PUBLIC;
 REVOKE ALL ON orra_game_leaderboard FROM PUBLIC;
 REVOKE ALL ON orra_readings FROM PUBLIC;
+REVOKE ALL ON user_profiles FROM PUBLIC;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON game_sessions TO orra_app;
 GRANT SELECT, INSERT, DELETE ON orra_game_leaderboard TO orra_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON orra_readings TO orra_app;
+GRANT SELECT, INSERT, UPDATE ON user_profiles TO orra_app;
 
 -- App DB user (non-superuser): GRANT orra_app TO your_runtime_user;
