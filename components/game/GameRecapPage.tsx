@@ -44,6 +44,10 @@ interface GlobalStats {
 
 type TabType = "leaderboard" | "questions" | "history";
 
+function buildTriviaShareText(runScore: number, pythIq: number, bossesDefeated: number): string {
+  return `I just scored ${runScore} in Orra Trivia Clash! 👁️ Pyth IQ: ${pythIq}. ${bossesDefeated}/3 guardians defeated. #OrraTriviaClash #Pyth`;
+}
+
 const WIN_HEADLINES = [
   "GG, Oracle Breaker",
   "Flawless Clash Energy",
@@ -284,13 +288,13 @@ export function GameRecapPage({
     try {
       await navigator.share({
         title: "Orra Trivia Clash",
-        text: `Scored ${session.runScore} in Trivia Clash. Pyth IQ: ${iq}. ${session.bossesDefeated}/3 guardians defeated.`,
+        text: buildTriviaShareText(session.runScore, iq, session.bossesDefeated),
       });
     } catch {}
   }, [session.runScore, session.bossesDefeated, iq, handleDownload]);
 
   const handleShareToX = useCallback(() => {
-    const text = `I just scored ${session.runScore} in Orra Trivia Clash! 🎮 Pyth IQ: ${iq}. ${session.bossesDefeated}/3 guardians defeated. #OrraTriviaClash #Pyth`;
+    const text = buildTriviaShareText(session.runScore, iq, session.bossesDefeated);
     const encodedText = encodeURIComponent(text);
     const url = `https://x.com/intent/post?text=${encodedText}`;
     window.open(url, "_blank", "noopener,noreferrer");
