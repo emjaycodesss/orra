@@ -19,7 +19,7 @@ function isPortalPath(pathname: string | null) {
   return pathname === "/portal" || pathname.startsWith("/portal/");
 }
 
-export type ReadingOrbitBindings = {
+type ReadingOrbitBindings = {
   showEnterOverlay: boolean;
   softenForContent: boolean;
   onPortalEntered: () => void;

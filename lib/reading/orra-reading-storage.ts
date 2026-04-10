@@ -1,10 +1,10 @@
 import { devWarn } from "@/lib/dev-warn";
 
-export const ORRA_READING_STORAGE_PREFIX = "orra-reading-";
+const ORRA_READING_STORAGE_PREFIX = "orra-reading-";
 
-export const MAX_ORRA_READING_RECORDS = 22;
+const MAX_ORRA_READING_RECORDS = 22;
 
-export type OrraReadingRecord = {
+type OrraReadingRecord = {
   cardIndex: number;
   isReversed: boolean;
   asset: string;
@@ -18,7 +18,7 @@ export type OrraReadingRecord = {
   requestTxHash?: string;
 };
 
-export function orraReadingStorageKey(sequenceNumber: bigint | string): string {
+function orraReadingStorageKey(sequenceNumber: bigint | string): string {
   const s = typeof sequenceNumber === "bigint" ? sequenceNumber.toString() : sequenceNumber;
   return `${ORRA_READING_STORAGE_PREFIX}${s}`;
 }

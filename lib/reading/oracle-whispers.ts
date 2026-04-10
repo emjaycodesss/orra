@@ -1,7 +1,7 @@
-import type { SignalClarity } from "./oracleState";
+import type { SignalClarity } from "@/lib/oracleState";
 import { devWarn } from "@/lib/dev-warn";
 
-export function whisperText(clarity: SignalClarity): string {
+function whisperText(clarity: SignalClarity): string {
   switch (clarity) {
     case "tight":
       return "The oracle sees clearly";
@@ -14,7 +14,7 @@ export function whisperText(clarity: SignalClarity): string {
   }
 }
 
-export const STALE_WHISPER = "The market sleeps";
+const STALE_WHISPER = "The market sleeps";
 
 export interface WhisperData {
   signalClarity: SignalClarity;

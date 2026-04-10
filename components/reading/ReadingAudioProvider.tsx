@@ -12,7 +12,7 @@ import {
 import { usePathname } from "next/navigation";
 import { useMountEffect } from "@/hooks/useMountEffect";
 import { useReactiveEffect } from "@/hooks/useReactiveEffect";
-import { ReadingAudioEngine } from "@/lib/reading-audio";
+import { ReadingAudioEngine } from "@/lib/reading/reading-audio";
 
 function subscribeReducedMotion(cb: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -28,7 +28,7 @@ function getReducedMotionSnapshot(): boolean {
   );
 }
 
-export type ReadingAudioContextValue = {
+type ReadingAudioContextValue = {
   ready: boolean;
   beginAmbientFromReadingNav: () => Promise<void>;
   notifyEnterPortal: () => Promise<void>;
@@ -43,6 +43,14 @@ export type ReadingAudioContextValue = {
   }) => void;
   cancelSpreadDealSchedule: () => void;
   playRevealCinematic: () => void;
+  primeGameAudio: () => void;
+  preloadGameAudio: () => Promise<void>;
+  startGameLoop: () => void;
+  stopGameLoop: () => void;
+  playGameCorrect: () => void;
+  playGameWrong: () => void;
+  playGameStinger: () => void;
+  playGameDamage: () => void;
 };
 
 const ReadingAudioContext = createContext<ReadingAudioContextValue | null>(null);
@@ -51,6 +59,9 @@ export function useReadingAudio(): ReadingAudioContextValue | null {
   return useContext(ReadingAudioContext);
 }
 
+/**
+ * Shared ritual + duel audio. Ambient loop runs through portal→lobby until `startGameLoop` sets `gameRunAudioActiveRef` and stops it.
+ */
 export function ReadingAudioProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const prevPathRef = useRef<string | null>(null);
@@ -62,6 +73,7 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
 
   const [ready, setReady] = useState(false);
   const [portalEntered, setPortalEntered] = useState(false);
+  const gameRunAudioActiveRef = useRef(false);
 
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
@@ -78,7 +90,7 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
   const syncAmbientLoop = useCallback(() => {
     const e = engineRef.current;
     if (!e) return;
-    if (!soundAllowed || !portalEntered) {
+    if (!soundAllowed || !portalEntered || gameRunAudioActiveRef.current) {
       e.stopAmbientLoop();
       return;
     }
@@ -105,8 +117,10 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
   useReactiveEffect(() => {
     const prev = prevPathRef.current;
     prevPathRef.current = pathname;
-    const wasRitual = prev === "/reading" || prev === "/portal";
-    const stillRitual = pathname === "/reading" || pathname === "/portal";
+    const wasRitual =
+      prev === "/reading" || prev === "/portal" || prev === "/game";
+    const stillRitual =
+      pathname === "/reading" || pathname === "/portal" || pathname === "/game";
     if (wasRitual && !stillRitual) {
       setPortalEntered(false);
       engineRef.current?.stopAmbientLoop();
@@ -167,6 +181,49 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
     getEngine().playRevealCinematic();
   }, [getEngine]);
 
+  const primeGameAudio = useCallback(() => {
+    getEngine().beginResumeFromUserGesture();
+    void getEngine().resume();
+  }, [getEngine]);
+
+  const preloadGameAudio = useCallback(async () => {
+    await getEngine().preloadGameAudio();
+  }, [getEngine]);
+
+  /** Duel BGM replaces ambient — stop the drone first so they never stack. */
+  const startGameLoop = useCallback(() => {
+    if (!soundAllowed) return;
+    const e = getEngine();
+    e.stopAmbientLoop();
+    e.startGameLoop();
+    gameRunAudioActiveRef.current = true;
+  }, [getEngine, soundAllowed]);
+
+  const stopGameLoop = useCallback(() => {
+    gameRunAudioActiveRef.current = false;
+    getEngine().stopGameLoop();
+  }, [getEngine]);
+
+  const playGameCorrect = useCallback(() => {
+    if (!soundAllowed) return;
+    getEngine().playGameCorrect();
+  }, [getEngine, soundAllowed]);
+
+  const playGameWrong = useCallback(() => {
+    if (!soundAllowed) return;
+    getEngine().playGameWrong();
+  }, [getEngine, soundAllowed]);
+
+  const playGameStinger = useCallback(() => {
+    if (!soundAllowed) return;
+    getEngine().playGameStinger();
+  }, [getEngine, soundAllowed]);
+
+  const playGameDamage = useCallback(() => {
+    if (!soundAllowed) return;
+    getEngine().playGameDamage();
+  }, [getEngine, soundAllowed]);
+
   const value = useMemo(
     () => ({
       ready,
@@ -178,6 +235,14 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
       scheduleSpreadDealShuffleBed,
       cancelSpreadDealSchedule,
       playRevealCinematic,
+      primeGameAudio,
+      preloadGameAudio,
+      startGameLoop,
+      stopGameLoop,
+      playGameCorrect,
+      playGameWrong,
+      playGameStinger,
+      playGameDamage,
     }),
     [
       ready,
@@ -189,6 +254,14 @@ export function ReadingAudioProvider({ children }: { children: React.ReactNode }
       scheduleSpreadDealShuffleBed,
       cancelSpreadDealSchedule,
       playRevealCinematic,
+      primeGameAudio,
+      preloadGameAudio,
+      startGameLoop,
+      stopGameLoop,
+      playGameCorrect,
+      playGameWrong,
+      playGameStinger,
+      playGameDamage,
     ],
   );
 

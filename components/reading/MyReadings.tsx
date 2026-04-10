@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import Image from "next/image";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { MAJOR_ARCANA, type CardOrientation } from "@/lib/cards";
 import {
   getPastReadingsServerSnapshot,
@@ -16,19 +16,20 @@ import {
   loadPastReadingsForAddress,
   subscribePastReadings,
   type PastReading,
-} from "@/lib/reading-history-store";
+} from "@/lib/reading/reading-history-store";
 import {
   formatPriceForOrraRecord,
   readOrraReadingRecord,
   saveOrraReadingRecord,
-} from "@/lib/orra-reading-storage";
+} from "@/lib/reading/orra-reading-storage";
+import { pushOrraReadingToServer } from "@/lib/reading/orra-reading-sync";
 import { CardReveal } from "@/components/reading/CardReveal";
 import { EntropyProof } from "@/components/reading/EntropyProof";
 import { Interpretation } from "@/components/reading/Interpretation";
 import { ReadingReceipt } from "@/components/reading/ReadingReceipt";
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
 import { ReadingConnectInline } from "@/components/reading/ReadingWalletHud";
-import { downloadReadingAsPng } from "@/lib/export-reading-png";
+import { downloadReadingAsPng } from "@/lib/reading/export-reading-png";
 import { devWarn } from "@/lib/dev-warn";
 
 function MyReadingsChainLoading() {
@@ -145,11 +146,19 @@ function readPastReadingListAssetLabel(sequenceNumber: bigint): string | null {
   }
 }
 
-function persistPastReadingOrraRecord(reading: PastReading, interpretation: string) {
+function persistPastReadingOrraRecord(
+  reading: PastReading,
+  interpretation: string,
+  ctx: { walletAddress: string; chainId: number }
+) {
   let asset = `Feed #${reading.feedId}`;
   let assetSymbol = "";
   let price = "—";
   let requestTxHash = "";
+  let realm: string | undefined;
+  let stance: string | undefined;
+  let timeframe: string | undefined;
+  let truth: string | undefined;
   try {
     const legacy = window.localStorage.getItem(`reading-${reading.sequenceNumber.toString()}`);
     if (legacy) {
@@ -158,13 +167,22 @@ function persistPastReadingOrraRecord(reading: PastReading, interpretation: stri
         realm?: string;
         realmSymbol?: string;
         requestTxHash?: string | null;
+        stance?: string;
+        timeframe?: string;
+        truth?: string;
       };
       if (p.rawSnapshot) price = formatPriceForOrraRecord(p.rawSnapshot);
-      if (typeof p.realm === "string" && p.realm.trim()) asset = p.realm;
+      if (typeof p.realm === "string" && p.realm.trim()) {
+        asset = p.realm;
+        realm = p.realm.trim();
+      }
       if (typeof p.realmSymbol === "string") assetSymbol = p.realmSymbol;
       if (typeof p.requestTxHash === "string" && p.requestTxHash.trim()) {
         requestTxHash = p.requestTxHash.trim();
       }
+      if (typeof p.stance === "string" && p.stance.trim()) stance = p.stance.trim();
+      if (typeof p.timeframe === "string" && p.timeframe.trim()) timeframe = p.timeframe.trim();
+      if (typeof p.truth === "string" && p.truth.trim()) truth = p.truth.trim();
     }
   } catch (e) {
     devWarn("my-readings:persist-legacy", e);
@@ -182,6 +200,37 @@ function persistPastReadingOrraRecord(reading: PastReading, interpretation: stri
     oracleSnapshotHash: reading.oracleSnapshotHash,
     ...(requestTxHash ? { requestTxHash } : {}),
   });
+  const cb = reading.txHash?.trim();
+  if (
+    ctx.walletAddress &&
+    cb &&
+    reading.randomNumber &&
+    Number.isFinite(reading.feedId)
+  ) {
+    pushOrraReadingToServer({
+      walletAddress: ctx.walletAddress,
+      chainId: ctx.chainId,
+      sequenceNumber: reading.sequenceNumber.toString(),
+      cardIndex: reading.cardIndex,
+      isReversed: reading.isReversed,
+      feedId: reading.feedId,
+      oracleSnapshotHash: reading.oracleSnapshotHash,
+      randomNumber: reading.randomNumber,
+      callbackTxHash: cb,
+      requestTxHash: requestTxHash || undefined,
+      realm: realm ?? asset,
+      stance,
+      timeframe,
+      truth,
+      interpretation,
+      rawSnapshot: {
+        asset,
+        assetSymbol,
+        price,
+        timestamp: Date.now(),
+      },
+    });
+  }
 }
 
 function readPastEntropyTxHashes(
@@ -233,6 +282,7 @@ interface MyReadingsProps {
 
 export function MyReadings({ mobileView, setMobileView }: MyReadingsProps) {
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
   const state = useSyncExternalStore(
     subscribePastReadings,
     getPastReadingsSnapshot,
@@ -266,9 +316,15 @@ export function MyReadings({ mobileView, setMobileView }: MyReadingsProps) {
       if (!selectedReading || fullText === PAST_READING_NO_INTERP || !fullText.trim()) return;
       const existing = readOrraReadingRecord(selectedReading.sequenceNumber);
       if (existing?.interpretation === fullText) return;
-      persistPastReadingOrraRecord(selectedReading, fullText);
+      if (!address) return;
+      const resolvedChainId =
+        typeof chainId === "number" && Number.isFinite(chainId) ? chainId : 84532;
+      persistPastReadingOrraRecord(selectedReading, fullText, {
+        walletAddress: address,
+        chainId: resolvedChainId,
+      });
     },
-    [selectedReading]
+    [selectedReading, address, chainId]
   );
 
   const [pastDownloadBusy, setPastDownloadBusy] = useState(false);

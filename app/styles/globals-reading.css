@@ -1,6 +1,7 @@
 /* Reading route only (dark theme overrides + flows; was tail of globals.css). */
 
 .reading-page {
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
   --surface-0: #12091d;
   --surface-1: #161126;
   --surface-2: #1f1734;
@@ -8,16 +9,13 @@
   --surface-4: #352b56;
   --ink-900: #f2ebff;
   --ink-700: #cfc2eb;
+  --ink-600: #bcaeda;
   --ink-500: #ab99d0;
   --ink-400: #8f7eb3;
   --ink-300: #736291;
   --ink-200: #564674;
   background-color: var(--surface-0);
-  
-  background-image: radial-gradient(circle, rgba(167, 139, 250, 0.09) 1px, transparent 1px);
-  background-size: 24px 24px;
 
-  
   --reading-vh: 100dvh;
   --reading-util-pad-top: calc(max(env(safe-area-inset-top, 0px), 12px) + 6px);
   --reading-util-body: 3.5rem;
@@ -40,6 +38,35 @@
   min-height: var(--reading-vh);
 }
 
+.reading-page main.reading-main--arena {
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: 100svh;
+  /* Cap height + clip Y so the running duel never grows the document scrollbox */
+  max-height: 100dvh;
+  max-height: 100svh;
+  padding-top: 0 !important;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 6px);
+  padding-left: 0;
+  padding-right: 0;
+  display: flex;
+  flex-direction: column;
+  /* min-height stays 100dvh/svh above; min-height:0 belongs on flex children (.arena-stage), not here */
+  overflow-x: hidden;
+  overflow-y: hidden;
+  box-sizing: border-box;
+}
+
+/* Hide orbit background during duel */
+.reading-page main.reading-main--arena::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-color: #12091d;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .reading-page .reading-fixed-util-header {
   top: 0;
   overflow: visible;
@@ -57,6 +84,19 @@
 
 .reading-page main.reading-main-below-util-header {
   padding-top: var(--reading-main-offset);
+}
+
+/*
+  Path chooser needs viewport-level centering from the main shell itself.
+  This avoids inherited hero min-height math from pushing the chooser stack off center.
+*/
+.reading-page main.reading-main-below-util-header.reading-main--path-choose {
+  box-sizing: border-box;
+  min-height: var(--reading-vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: max(0.8rem, env(safe-area-inset-bottom, 0px));
 }
 
 /* Approach hero: optical center in the viewport slice below the fixed util header */
@@ -80,6 +120,18 @@
   min-height: calc(var(--reading-vh) - var(--reading-main-offset));
 }
 
+/* Portal chooser gets stricter centering so logo, prompt, and cards stay visually centered. */
+.reading-page .reading-path-chooser {
+  justify-content: center;
+  gap: clamp(1.35rem, 2.6vw, 2.1rem);
+  padding-top: max(0.25rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(0.9rem, env(safe-area-inset-bottom, 0px));
+}
+
+.reading-page main.reading-main--path-choose .reading-path-chooser {
+  min-height: 0;
+}
+
 .reading-page .reading-history-scroll-host {
   box-sizing: border-box;
   height: calc(var(--reading-vh) - var(--reading-main-offset));
@@ -101,6 +153,40 @@
 
 /* Chain loading: center logo + copy in the visible area below the util header (mobile-safe) */
 .reading-page .reading-history-loading-hero {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  gap: clamp(0.875rem, 3.5vw, 1.5rem);
+  text-align: center;
+}
+
+.game-leaderboard-scroll-host {
+  box-sizing: border-box;
+  height: calc(var(--reading-vh) - var(--reading-main-offset));
+  max-height: calc(var(--reading-vh) - var(--reading-main-offset));
+  min-height: 0;
+  padding-top: 0;
+}
+
+.game-leaderboard-scroll-host .reading-history-inner {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.game-leaderboard-scroll-host .reading-history-loading-hero {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -495,7 +581,7 @@
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 4;
+  z-index: 9;
 }
 
 .reading-page .cosmic-search__placeholder {
@@ -519,6 +605,17 @@
   caret-color: #c4b5fd !important;
   max-width: 392px;
   width: 100%;
+}
+
+/* Prevent browser autofill from forcing a light background. */
+.reading-page .cosmic-search__input:-webkit-autofill,
+.reading-page .cosmic-search__input:-webkit-autofill:hover,
+.reading-page .cosmic-search__input:-webkit-autofill:focus,
+.reading-page .cosmic-search__input:-webkit-autofill:active {
+  -webkit-text-fill-color: #f2ebff !important;
+  box-shadow: 0 0 0 1000px #12091d inset !important;
+  caret-color: #c4b5fd !important;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .reading-page .cosmic-search__input[data-empty="true"] {
@@ -590,6 +687,11 @@
   }
 }
 
+.reading-page .cosmic-search__main[data-loading="true"] .cosmic-search__wormhole-border::before {
+  animation-duration: 2.6s;
+  filter: brightness(1.45);
+}
+
 .reading-page .cosmic-search__wormhole-face {
   position: absolute;
   top: 8px;
@@ -609,6 +711,143 @@
 .reading-page .cosmic-search__wormhole-face .cosmic-search__sparkles-icon {
   color: color-mix(in srgb, var(--accent-light) 78%, #f5f0ff 22%);
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent-light) 45%, transparent));
+}
+
+.reading-page .cosmic-search__wormhole-face.game-profile-check {
+  color: color-mix(in srgb, var(--accent-light) 78%, #f5f0ff 22%);
+  overflow: hidden;
+}
+
+.reading-page .cosmic-search__wormhole-face.game-profile-check .oracle-button-svg {
+  fill: currentColor;
+  opacity: 0.92;
+}
+
+.reading-page .cosmic-search__wormhole-face.game-profile-check.cursor-not-allowed .oracle-button-svg {
+  opacity: 0.45;
+}
+
+/* ── Profile spinner (simple) ── */
+.reading-page .game-profile-spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--accent-light) 28%, transparent);
+  border-top-color: color-mix(in srgb, var(--accent-light) 88%, #f5f0ff);
+  animation: game-profile-spin 0.8s linear infinite;
+}
+
+@keyframes game-profile-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Legacy peg-top (kept for reference, no longer used) ── */
+.reading-page .game-profile-loader--legacy {
+  --fill-color: color-mix(in srgb, var(--accent-light) 78%, #f5f0ff 22%);
+  --shine-color: color-mix(in srgb, var(--accent-light) 55%, transparent);
+  transform: scale(0.24);
+  transform-origin: center;
+  width: 100px;
+  height: auto;
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 0 10px var(--shine-color));
+}
+
+.reading-page .game-profile-loader #pegtopone {
+  position: absolute;
+  animation: flowe-one 1s linear infinite;
+}
+
+.reading-page .game-profile-loader #pegtoptwo {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0) translateY(-200px) translateX(-100px);
+  animation: flowe-two 1s linear infinite;
+  animation-delay: 0.3s;
+}
+
+.reading-page .game-profile-loader #pegtopthree {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0) translateY(-200px) translateX(100px);
+  animation: flowe-three 1s linear infinite;
+  animation-delay: 0.6s;
+}
+
+.reading-page .game-profile-loader svg g path:first-child {
+  fill: var(--fill-color);
+}
+
+@keyframes flowe-one {
+  0% {
+    transform: scale(0.5) translateY(-200px);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(0.75) translateY(-100px);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) translateY(0px);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.5) translateY(50px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) translateY(100px);
+    opacity: 0;
+  }
+}
+
+@keyframes flowe-two {
+  0% {
+    transform: scale(0.5) rotateZ(-10deg) translateY(-200px) translateX(-100px);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1) rotateZ(-5deg) translateY(-100px) translateX(-50px);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) rotateZ(0deg) translateY(0px) translateX(-25px);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.5) rotateZ(5deg) translateY(50px) translateX(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) rotateZ(10deg) translateY(100px) translateX(25px);
+    opacity: 0;
+  }
+}
+
+@keyframes flowe-three {
+  0% {
+    transform: scale(0.5) rotateZ(10deg) translateY(-200px) translateX(100px);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1) rotateZ(5deg) translateY(-100px) translateX(50px);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) rotateZ(0deg) translateY(0px) translateX(25px);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.5) rotateZ(-5deg) translateY(50px) translateX(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) rotateZ(-10deg) translateY(100px) translateX(-25px);
+    opacity: 0;
+  }
 }
 
 .reading-approach-logo-shell {
@@ -862,6 +1101,17 @@
   height: 22px;
 }
 
+.reading-page .oracle-button.reading-nav-oracle-cta--micro {
+  min-height: 2.3rem;
+  padding: 0.35em 0.85em;
+  font-size: 0.8rem;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta--micro .oracle-button-svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* Full-width oracle rows (Entropy Arena MCQ / booster slots): left-aligned label, wraps like reading body copy */
 .reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--block {
   width: 100%;
@@ -931,14 +1181,27 @@
   animation: none;
 }
 
-.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse .oracle-button-txt-1,
-.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse:focus .oracle-button-txt-1 {
+/* No letter pulse on static labels — but skip `--reveal` so collapsed icon state is not forced visible. */
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse:not(.reading-nav-oracle-cta--reveal) .oracle-button-txt-1,
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse:not(.reading-nav-oracle-cta--reveal):focus .oracle-button-txt-1 {
   animation: none;
   opacity: 1;
 }
 
-.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse .oracle-button-txt-2,
-.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse:focus .oracle-button-txt-2 {
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse:not(.reading-nav-oracle-cta--reveal) .oracle-button-txt-2,
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--no-pulse:not(.reading-nav-oracle-cta--reveal):focus .oracle-button-txt-2 {
+  animation: none;
+  opacity: 0;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--no-pulse:hover .oracle-button-txt-1,
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--no-pulse:focus-visible .oracle-button-txt-1 {
+  animation: none;
+  opacity: 1;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--no-pulse:hover .oracle-button-txt-2,
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--no-pulse:focus-visible .oracle-button-txt-2 {
   animation: none;
   opacity: 0;
 }
@@ -1037,6 +1300,25 @@
 .reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--portal-back:hover .oracle-button-txt-wrap,
 .reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--portal-back:focus-visible .oracle-button-txt-wrap {
   width: 6.65rem;
+}
+
+/*
+ * `/portal` — "Back to Dashboard": same reveal treatment as `--portal-back`, slightly wider rail for the longer label.
+ */
+.reading-page .oracle-button.reading-nav-oracle-cta.reading-nav-oracle-cta--dashboard-back {
+  flex-shrink: 0;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--dashboard-back:hover,
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--dashboard-back:focus-visible {
+  /* portal-back uses 9.4rem — +~2rem for "Dashboard" vs "Portal" */
+  width: 11.35rem;
+}
+
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--dashboard-back:hover .oracle-button-txt-wrap,
+.reading-page .oracle-button.reading-nav-oracle-cta--compact.reading-nav-oracle-cta--reveal.reading-nav-oracle-cta--dashboard-back:focus-visible .oracle-button-txt-wrap {
+  /* portal-back uses 6.65rem — proportionally wider, still compact */
+  width: 8.35rem;
 }
 
 @keyframes reading-nav-oracle-letter-anim {
@@ -1201,6 +1483,11 @@
   gap: 0;
   user-select: none;
   position: relative;
+  /* Shared layout variables — inherited by both table and facedown-row */
+  --spread-cols: 7;
+  --spread-card-w: clamp(56px, 7.5vw, 96px);
+  --spread-card-h: calc(var(--spread-card-w) * 1.6);
+  --spread-gap: clamp(8px, 1.2vw, 16px);
 }
 
 .spread-phase__header {
@@ -1224,14 +1511,43 @@
 }
 
 .spread-phase__table {
-  --spread-cols: 7;
-  --spread-card-w: clamp(56px, 7.5vw, 96px);
-  --spread-card-h: calc(var(--spread-card-w) * 1.6);
-  --spread-gap: clamp(8px, 1.2vw, 16px);
   display: grid;
   grid-template-columns: repeat(var(--spread-cols), var(--spread-card-w));
   gap: var(--spread-gap);
   position: relative;
+}
+
+/* 3 face-down booster cards — sits directly below the caption */
+.spread-phase__facedown-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.spread-phase__facedown-card {
+  --fd-w: clamp(155px, 22vw, 200px);
+  width: var(--fd-w);
+  height: calc(var(--fd-w) * 1.6);
+  flex-shrink: 0;
+  overflow: visible;
+  border-radius: 0;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
+}
+
+.spread-phase__facedown-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
+  pointer-events: none;
+  border-radius: 0;
+}
+
+@media (max-width: 480px) {
+  .spread-phase__facedown-card {
+    --fd-w: clamp(100px, 26vw, 130px);
+  }
 }
 
 .spread-phase__card {
@@ -1242,12 +1558,12 @@
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.35);
   will-change: transform, opacity;
-  
+
   transition:
     transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.6s ease;
-  
-  /* Durations/stagger: keep in sync with lib/spread-phase-constants.ts (SPREAD_DEAL_*) */
+
+  /* Durations/stagger: keep in sync with lib/reading/spread-phase-constants.ts (SPREAD_DEAL_*) */
   animation: reading-spread-deal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--spread-i, 0) * 120ms);
 }
@@ -1291,7 +1607,7 @@
 }
 
 @media (max-width: 480px) {
-  .spread-phase__table {
+  .spread-phase {
     --spread-cols: 5;
     --spread-card-w: clamp(52px, 16vw, 68px);
   }
@@ -1730,13 +2046,13 @@
   }
 }
 
-/* Fallback: rectangular 2× layer (non-square on tall cards — improved via keyframes + GPU hint) */
+/* Fallback: rectangular 2x layer (non-square on tall cards -- improved via keyframes + GPU hint) */
 .now-card-line::before {
   content: "";
   position: absolute;
   inset: -50%;
   transform-origin: center;
-  /* Slightly softer sweep reduces moiré where the clip-rect meets the beam on narrow viewports */
+  /* Slightly softer sweep reduces moire where the clip-rect meets the beam on narrow viewports */
   background: conic-gradient(
     from 0deg,
     transparent 0%,
@@ -1749,6 +2065,1943 @@
   animation: nowCardOrbit 6s linear infinite;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+.arena-scene-name {
+  position: absolute;
+  top: 12px;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(6, 8, 20, 0.86);
+  backdrop-filter: blur(10px);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink-900);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+  max-width: 42%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arena-shield-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(8, 25, 40, 0.7);
+  color: #bae6fd;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.arena-effect-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.arena-effect-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-700);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.arena-effect-chip--info {
+  color: #e9d5ff;
+  border-color: rgba(167, 139, 250, 0.35);
+  background: rgba(76, 29, 149, 0.35);
+}
+
+.arena-effect-chip--good {
+  color: #fde68a;
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(49, 28, 6, 0.6);
+}
+
+.arena-effect-chip--warn {
+  color: #c7d2fe;
+  border-color: rgba(79, 70, 229, 0.45);
+  background: rgba(22, 18, 60, 0.65);
+}
+
+.arena-player-corner {
+  left: 12px;
+  text-align: left;
+}
+
+.arena-enemy-corner {
+  right: 12px;
+  text-align: right;
+  justify-content: flex-end;
+}
+
+.arena-scene-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arena-scene-hp {
+  position: relative;
+  display: inline-flex;
+  width: clamp(150px, 18vw, 200px);
+  min-width: 120px;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(12, 10, 22, 0.95), rgba(10, 8, 18, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.12),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.6),
+    0 6px 14px rgba(8, 4, 16, 0.55);
+}
+
+.arena-scene-hp-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.25s ease;
+  box-shadow:
+    inset 0 0 10px rgba(255, 255, 255, 0.35),
+    0 0 10px rgba(124, 58, 237, 0.28);
+}
+
+.arena-scene-hp-fill--player {
+  background: linear-gradient(90deg, #b492ff, #76e7ff);
+}
+
+.arena-scene-hp-fill--boss {
+  background: linear-gradient(90deg, #ff92a4, #ff5f78);
+}
+
+/* =============================================
+   DUEL HEADER — Full-width scoreboard
+   ============================================= */
+
+.duel-header-fixed {
+  position: relative;
+  z-index: 100;
+  width: 100%;
+  background: var(--surface-1);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.10);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+/* duel-header-content and booster styles are defined later in the DUEL LAYOUT section */
+
+.duel-score-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.duel-score-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #A78BFA;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+}
+
+/* =============================================
+   DUEL AREA CONTAINER — Fixed layout
+   ============================================= */
+
+.duel-area-container {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  /* Flex child of .arena-stage: share viewport with question panel (no fixed 420px guess) */
+  flex: 0 1 44dvh;
+  min-height: clamp(140px, 32dvh, 300px);
+  max-height: min(52dvh, 540px);
+  height: auto;
+  margin-top: 0;
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.duel-arena-scene {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+/* Boss backgrounds — Applied to arena-scene for proper layering */
+.duel-area-container[data-boss-index="0"] .arena-scene {
+  background-image: url('/bosses/planck_bg.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  /* Avoid fixed-attachment paint jitter during rapid duel state transitions. */
+  background-attachment: scroll;
+}
+
+.duel-area-container[data-boss-index="1"] .arena-scene {
+  background-image: url('/bosses/ktizz_bg.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  /* Avoid fixed-attachment paint jitter during rapid duel state transitions. */
+  background-attachment: scroll;
+}
+
+.duel-area-container[data-boss-index="2"] .arena-scene {
+  background-image: url('/bosses/chop_bg.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  /* Avoid fixed-attachment paint jitter during rapid duel state transitions. */
+  background-attachment: scroll;
+}
+
+@media (max-width: 768px) {
+  .duel-area-container[data-boss-index="0"] .arena-scene,
+  .duel-area-container[data-boss-index="1"] .arena-scene,
+  .duel-area-container[data-boss-index="2"] .arena-scene {
+    background-attachment: scroll;
+  }
+
+  .duel-question-area {
+    background-attachment: scroll;
+  }
+}
+
+/* HUD — Overlaid INSIDE duel arena scene */
+.duel-area-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 9, 29, 0.92) 0%,
+    rgba(18, 9, 29, 0.70) 60%,
+    rgba(18, 9, 29, 0) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.50),
+    inset 0 1px 0 rgba(167, 139, 250, 0.12);
+  pointer-events: none;
+}
+
+/* =============================================
+   DUEL HUD — fighting-game HP row + timer
+   ============================================= */
+
+.duel-hud-wrap {
+  position: relative;
+  z-index: 11;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.duel-hud-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+}
+
+.duel-hud-fighter {
+  display: flex;
+  /* Top-align avatar + bars so player/boss portraits share one horizontal baseline (center alignment drifts when column heights differ). */
+  align-items: flex-start;
+  gap: 12px;
+  flex: 0 1 auto;
+}
+
+.duel-hud-fighter--player {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.duel-hud-fighter--boss {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.duel-hud-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid rgba(100, 70, 150, 0.60);
+  box-shadow:
+    inset -1px -1px 3px rgba(0, 0, 0, 0.50),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.10),
+    0 4px 8px rgba(0, 0, 0, 0.60);
+  background: linear-gradient(135deg, rgba(40, 20, 80, 0.40) 0%, transparent 100%);
+}
+
+.duel-hud-avatar-glyph {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(70, 40, 120, 0.50) 0%, rgba(50, 30, 90, 0.40) 100%);
+  color: var(--ink-500);
+  font-size: 1.5rem;
+  border: 1px solid rgba(100, 70, 150, 0.60);
+  box-shadow:
+    inset -1px -1px 3px rgba(0, 0, 0, 0.50),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.10),
+    0 4px 8px rgba(0, 0, 0, 0.60);
+}
+
+.duel-hud-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.duel-hud-fighter--boss .duel-hud-info {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.duel-hud-name {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  color: var(--ink-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.60);
+  flex-shrink: 0;
+}
+
+.duel-hud-hp-bar {
+  /* Thickness scales with viewport; phones stay compact, desktop reads bolder */
+  height: clamp(9px, 2.1vw + 5px, 12px);
+  border-radius: 9999px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(30, 20, 50, 0.90) 0%, rgba(10, 5, 20, 0.95) 100%);
+  display: flex;
+  align-items: stretch;
+  box-shadow:
+    inset -1px -1px 3px rgba(0, 0, 0, 0.80),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.08),
+    0 3px 8px rgba(0, 0, 0, 0.70);
+  min-width: 0;
+  width: 100%;
+  max-width: min(320px, 100%);
+  border: 1px solid rgba(60, 40, 90, 0.60);
+  flex-shrink: 1;
+}
+
+/* Boss bar: fill is right-justified so it depletes from center outward */
+.duel-hud-hp-bar--boss {
+  justify-content: flex-end;
+}
+
+.duel-hud-hp-fill {
+  height: 100%;
+  border-radius: inherit;
+  position: relative;
+  overflow: hidden;
+  transition: width 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.20),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.40);
+  /* Visible slash pattern overlay while preserving current color gradients. */
+  background-size:
+    100% 100%,
+    8px 8px;
+  background-repeat: no-repeat, repeat;
+}
+
+.duel-hud-hp-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Dedicated slash overlay layer so stripes remain visible over all gradients. */
+  background: repeating-linear-gradient(
+    -60deg,
+    rgba(255, 255, 255, 0.30) 0 2px,
+    rgba(255, 255, 255, 0) 2px 7px
+  );
+  opacity: 0.9;
+}
+
+.duel-hud-hp-fill--player {
+  background-image:
+    linear-gradient(180deg, #a78bfa 0%, #7c3aed 50%, #5b21b6 100%),
+    repeating-linear-gradient(
+      -60deg,
+      rgba(255, 255, 255, 0.30) 0 2px,
+      rgba(255, 255, 255, 0) 2px 6px
+    );
+}
+
+.duel-hud-hp-fill--boss {
+  background-image:
+    linear-gradient(180deg, #fcd34d 0%, #fbbf24 50%, #f59e0b 100%),
+    repeating-linear-gradient(
+      -60deg,
+      rgba(255, 255, 255, 0.28) 0 2px,
+      rgba(255, 255, 255, 0) 2px 6px
+    );
+}
+
+/* Player-only combo heat gauge — same chrome as HP, slightly thinner than HP bar */
+.duel-hud-heat-bar {
+  height: clamp(9px, 1.9vw + 5px, 11px);
+  margin-top: 5px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(25, 15, 40, 0.92) 0%, rgba(8, 4, 18, 0.96) 100%);
+  display: flex;
+  align-items: stretch;
+  box-shadow:
+    inset -1px -1px 2px rgba(0, 0, 0, 0.75),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.55);
+  min-width: 0;
+  width: 100%;
+  max-width: min(320px, 100%);
+  border: 1px solid rgba(120, 60, 40, 0.45);
+  flex-shrink: 1;
+}
+
+button.duel-hud-heat-bar--interactive {
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  appearance: none;
+}
+
+button.duel-hud-heat-bar--interactive:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.85);
+  outline-offset: 2px;
+}
+
+.duel-hud-heat-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+  background-image: linear-gradient(
+    180deg,
+    #fde68a 0%,
+    #f59e0b 45%,
+    #ea580c 100%
+  );
+}
+
+.duel-header-oracle-btn--combo {
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+}
+
+.duel-combo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: block;
+  pointer-events: auto;
+  isolation: isolate;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.duel-combo-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(192, 132, 252, 0.28) 0%, rgba(192, 132, 252, 0) 44%),
+    linear-gradient(180deg, rgba(7, 4, 20, 0.78) 0%, rgba(4, 2, 14, 0.92) 100%);
+  backdrop-filter: blur(8px) saturate(118%);
+}
+
+.duel-combo-chrome {
+  position: absolute;
+  left: 50%;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  z-index: 3;
+  width: min(92vw, 420px);
+  transform: translateX(-50%);
+  padding: clamp(8px, 1.2vw, 12px) clamp(8px, 1.8vw, 14px);
+  text-align: center;
+  pointer-events: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.duel-combo-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 900;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  letter-spacing: 0.08em;
+  color: #f5ecff;
+  text-shadow:
+    0 0 20px rgba(196, 181, 253, 0.86),
+    0 2px 10px rgba(0, 0, 0, 0.66);
+}
+
+.duel-combo-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(237, 233, 254, 0.95);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.62);
+}
+
+.duel-combo-timer {
+  margin-top: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #c4b5fd;
+  text-shadow:
+    0 0 14px rgba(167, 139, 250, 0.74),
+    0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.duel-combo-cancel {
+  pointer-events: auto;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(196, 181, 253, 0.55);
+  background: rgba(21, 12, 40, 0.68);
+  color: #f5f3ff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.duel-combo-cancel:hover {
+  background: rgba(139, 92, 246, 0.28);
+}
+
+.duel-combo-cancel:focus-visible {
+  outline: 2px solid rgba(196, 181, 253, 0.95);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px rgba(30, 10, 54, 0.85),
+    0 0 0 4px rgba(167, 139, 250, 0.7);
+}
+
+.duel-combo-field {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.duel-combo-target {
+  position: absolute;
+  z-index: 1;
+  width: clamp(44px, 11vw, 64px);
+  height: clamp(44px, 11vw, 64px);
+  border-radius: 50%;
+  border: 2px solid rgba(233, 213, 255, 0.88);
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0;
+  background: radial-gradient(
+    circle at 30% 24%,
+    rgba(250, 245, 255, 0.98) 0%,
+    rgba(216, 180, 254, 0.95) 36%,
+    rgba(147, 51, 234, 0.94) 66%,
+    rgba(76, 29, 149, 0.96) 100%
+  );
+  box-shadow:
+    0 0 0 2px rgba(124, 58, 237, 0.36),
+    0 0 28px rgba(167, 139, 250, 0.78),
+    inset 0 0 14px rgba(255, 255, 255, 0.26);
+  animation:
+    duel-combo-pulse 1.1s ease-in-out infinite,
+    duel-combo-orbit 1.8s linear infinite;
+}
+
+.duel-combo-target:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.98);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 3px rgba(76, 29, 149, 0.9),
+    0 0 0 6px rgba(196, 181, 253, 0.75),
+    0 0 30px rgba(196, 181, 253, 0.85),
+    inset 0 0 14px rgba(255, 255, 255, 0.26);
+}
+
+.duel-combo-target::before,
+.duel-combo-target::after {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Inner hot core improves focus visibility against bright arenas. */
+.duel-combo-target::before {
+  width: 46%;
+  height: 46%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.98) 0%, rgba(233, 213, 255, 0.1) 100%);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.75),
+    0 0 18px rgba(216, 180, 254, 0.7),
+    0 0 24px rgba(168, 85, 247, 0.52);
+}
+
+/* Outer ring syncs with burst cadence for a stronger "hit me now" signal. */
+.duel-combo-target::after {
+  width: 120%;
+  height: 120%;
+  border: 2px solid rgba(221, 214, 254, 0.78);
+  box-shadow: 0 0 18px rgba(196, 181, 253, 0.56);
+  animation: duel-combo-ring-ripple 1.1s ease-out infinite;
+}
+
+@keyframes duel-combo-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.88;
+    filter: brightness(1.12);
+  }
+}
+
+@keyframes duel-combo-orbit {
+  from { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.03); }
+  to { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+}
+
+@keyframes duel-combo-ring-ripple {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+  70% {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.17);
+  }
+}
+
+.duel-combo-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(250, 245, 255, 0.62) 0%, rgba(192, 132, 252, 0.32) 36%, transparent 62%),
+    repeating-radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.22) 0 3px, rgba(255, 255, 255, 0) 3px 14px);
+  mix-blend-mode: screen;
+  animation: duel-combo-burst-anim 560ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.duel-combo-burst::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: min(72vw, 620px);
+  height: min(72vw, 620px);
+  border-radius: 50%;
+  border: 3px solid rgba(245, 243, 255, 0.95);
+  box-shadow:
+    0 0 22px rgba(196, 181, 253, 0.84),
+    0 0 42px rgba(147, 51, 234, 0.58);
+  transform: translate(-50%, -50%) scale(0.25);
+  animation: duel-combo-shockwave 560ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes duel-combo-burst-anim {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes duel-combo-shockwave {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+}
+
+/* In-arena KO beat after combo minigame (duel view stays visible; parent defers session merge). */
+.combo-ko-arena-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  pointer-events: none;
+  text-align: center;
+  padding: max(8px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px))
+    max(8px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  /* Slight vignette so K.O. type pops on busy arena art */
+  background: radial-gradient(
+    ellipse 85% 70% at 50% 45%,
+    rgba(5, 6, 12, 0) 0%,
+    rgba(5, 6, 12, 0.55) 100%
+  );
+}
+
+.combo-ko-arena-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 252, 235, 0.72) 0%,
+    rgba(255, 72, 30, 0.5) 38%,
+    rgba(180, 30, 120, 0.42) 72%,
+    rgba(20, 8, 40, 0.35) 100%
+  );
+  opacity: 0;
+}
+
+.combo-ko-arena-title {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-size: clamp(2.5rem, 13vw, 5rem);
+  font-weight: 900;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  letter-spacing: 0.08em;
+  color: #fffefb;
+  text-shadow:
+    0 0 28px rgba(255, 180, 100, 0.95),
+    0 0 42px rgba(251, 113, 133, 0.85),
+    0 4px 0 rgba(88, 28, 28, 0.75),
+    0 8px 28px rgba(0, 0, 0, 0.65);
+}
+
+.combo-ko-arena-sub {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  max-width: 22rem;
+  font-size: clamp(0.92rem, 3vw, 1.12rem);
+  font-weight: 800;
+  color: #fff7e8;
+  text-shadow:
+    0 0 12px rgba(0, 0, 0, 0.85),
+    0 2px 14px rgba(0, 0, 0, 0.55);
+}
+
+.duel-hud-timer {
+  font-size: 2.5rem;
+  font-weight: 900;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+  text-align: center;
+  flex: 0 0 auto;
+  width: 4rem;
+  line-height: 1;
+  transition: color 0.3s ease, transform 0.1s ease;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.70);
+}
+
+.duel-hud-timer--warning {
+  color: #fbbf24;
+}
+
+.duel-hud-timer--danger {
+  color: #f87171;
+  animation: duelTimerPulse 300ms ease-in-out alternate infinite;
+}
+
+@keyframes duelTimerPulse {
+  from { transform: scale(1); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.70); }
+  to   { transform: scale(1.12); text-shadow: 0 0 16px rgba(248, 113, 113, 0.60); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .duel-combo-target,
+  .duel-combo-target::after,
+  .duel-combo-burst,
+  .duel-combo-burst::after {
+    animation: none;
+  }
+
+  .duel-hud-timer--danger {
+    animation: none;
+  }
+}
+
+/* Visually hidden, screen-reader only */
+.duel-hud-timer-announce {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.duel-hud-shield-bar {
+  /* Mirrors heat-bar chrome so Chop's shield reads as the same HUD system. */
+  height: clamp(9px, 1.9vw + 5px, 11px);
+  margin-top: 5px;
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid rgba(45, 94, 170, 0.55);
+  background: linear-gradient(180deg, rgba(18, 30, 58, 0.93) 0%, rgba(7, 16, 34, 0.96) 100%);
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  max-width: min(320px, 100%);
+  flex-shrink: 1;
+  box-shadow:
+    inset -1px -1px 2px rgba(0, 0, 0, 0.75),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.duel-hud-shield-fill {
+  height: 100%;
+  border-radius: inherit;
+  position: relative;
+  overflow: hidden;
+  transition: width 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+  background-image: linear-gradient(
+    180deg,
+    #bae6fd 0%,
+    #38bdf8 45%,
+    #0369a1 100%
+  );
+}
+
+.duel-hud-shield-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    -60deg,
+    rgba(255, 255, 255, 0.30) 0 2px,
+    rgba(255, 255, 255, 0) 2px 7px
+  );
+  opacity: 0.9;
+}
+
+/* Narrow viewports: HP bars can’t stay 320px+320px + timer — stack timer, full-width bars */
+@media (max-width: 767px) {
+  .duel-area-hud {
+    padding: 8px max(10px, env(safe-area-inset-left, 0px)) 10px max(10px, env(safe-area-inset-right, 0px));
+  }
+
+  .duel-hud-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .duel-hud-timer {
+    order: -1;
+    align-self: center;
+    font-size: clamp(1.5rem, 9vw, 2.1rem);
+    width: auto;
+  }
+
+  .duel-hud-fighter {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .duel-hud-info {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .duel-hud-hp-bar {
+    max-width: none;
+    /* Primary bar — match desktop ~2:1 vs heat/shield (min-width 768px sets the desktop pair) */
+    height: clamp(14px, 2.5vw + 7px, 18px);
+  }
+
+  /* Secondary tracks: explicit max height so they never visually match HP on narrow layouts */
+  .duel-hud-heat-bar,
+  .duel-hud-shield-bar {
+    height: clamp(5px, 1.1vw + 2.5px, 7px);
+    max-height: 7px;
+    margin-top: 4px;
+  }
+
+  .duel-hud-avatar,
+  .duel-hud-avatar-glyph {
+    width: 44px;
+    height: 44px;
+  }
+
+  .duel-hud-name {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Desktop HUD sizing: let fighter lanes expand so HP bars can actually grow. */
+  .duel-hud-row {
+    gap: 18px;
+  }
+
+  .duel-hud-timer {
+    align-self: center;
+  }
+
+  .duel-hud-fighter {
+    /* Previously flex: 0 1 auto; which collapses bar width to content.
+       Give each side a lane and let the timer sit between them. */
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .duel-hud-fighter--boss {
+    justify-content: flex-end;
+  }
+
+  .duel-hud-hp-bar {
+    /* Desktop / tablet landscape: noticeably taller than the old 14px bar */
+    height: clamp(22px, 1.15vw + 16px, 30px);
+    max-width: min(560px, 44vw);
+  }
+
+  /* Pair with HP above — ~2:1 thickness so heat/shield never read as a second HP bar */
+  .duel-hud-heat-bar,
+  .duel-hud-shield-bar {
+    height: clamp(11px, 0.52vw + 8px, 15px);
+    max-height: 15px;
+    margin-top: 6px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .duel-hud-hp-bar {
+    max-width: min(520px, 38vw);
+  }
+}
+
+@media (min-width: 1200px) {
+  .duel-hud-hp-bar {
+    max-width: min(560px, 34vw);
+  }
+}
+
+.duel-progress-row {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(242, 235, 255, 0.70);
+  font-weight: 600;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.60);
+  white-space: nowrap;
+}
+
+/* =============================================
+   DUEL INTERACTION PANEL — question + choices
+   ============================================= */
+
+.duel-prompt-title {
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
+  font-weight: 700;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  color: var(--ink-900);
+  line-height: 1.35;
+  min-height: 2.7em;
+}
+
+.duel-prompt-sub {
+  font-size: 12px;
+  color: var(--ink-400);
+  margin-top: 4px;
+}
+
+.duel-prompt-sub--danger {
+  color: #D97706;
+  font-weight: 600;
+}
+
+.duel-status-hint {
+  font-size: 12px;
+  color: var(--ink-500);
+  font-style: italic;
+}
+
+/* Choice button grid */
+.duel-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 359px) {
+  .duel-choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.duel-choice-grid--two {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Neumorphic raised choice button */
+.duel-choice-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--ink-900);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  text-align: center;
+  cursor: pointer;
+  min-height: 52px;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+  box-shadow:
+    -3px -3px 8px rgba(50, 30, 90, 0.28),
+     3px  3px 10px rgba(0, 0, 0, 0.55);
+}
+
+.duel-choice-btn:hover:not(:disabled) {
+  box-shadow:
+    -4px -4px 10px rgba(60, 35, 100, 0.35),
+     4px  4px 12px rgba(0, 0, 0, 0.60);
+  transform: translateY(-1px);
+}
+
+.duel-choice-btn:active:not(:disabled) {
+  box-shadow:
+    inset -2px -2px 5px rgba(50, 30, 90, 0.22),
+    inset  2px  2px 7px rgba(0, 0, 0, 0.50);
+  transform: translateY(0);
+}
+
+.duel-choice-btn:focus-visible {
+  outline: 2px solid rgba(143, 126, 179, 0.55);
+  outline-offset: 2px;
+}
+
+.duel-choice-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Sun card: amber glow ring */
+.duel-choice-btn--sun {
+  box-shadow:
+    -3px -3px 8px rgba(50, 30, 90, 0.28),
+     3px  3px 10px rgba(0, 0, 0, 0.55),
+     0 0 0 2px rgba(217, 119, 6, 0.50);
+}
+
+/* Eliminated (High Priestess) */
+.duel-choice-btn--eliminated {
+  opacity: 0.25;
+  text-decoration: line-through;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* Loading state */
+.duel-loading {
+  font-size: 13px;
+  color: var(--ink-400);
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* =============================================
+   FEEDBACK STRIP — appears after each answer
+   ============================================= */
+
+.duel-feedback {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.40),
+    inset -1px -1px 4px rgba(60, 35, 100, 0.12);
+}
+
+.duel-feedback--correct {
+  border-left: 3px solid #D97706;
+}
+
+.duel-feedback--wrong {
+  border-left: 3px solid #4F46E5;
+}
+
+.duel-feedback-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duel-feedback-icon--correct {
+  color: #D97706;
+  flex-shrink: 0;
+}
+
+.duel-feedback-icon--wrong {
+  color: #4F46E5;
+  flex-shrink: 0;
+}
+
+.duel-feedback-heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.duel-feedback-delta {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-500);
+}
+
+.duel-feedback-stem {
+  font-size: 12px;
+  color: var(--ink-500);
+  line-height: 1.45;
+}
+
+/* Correct answer chip shown on wrong answers */
+.duel-feedback-answer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(217, 119, 6, 0.10);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  color: #D97706;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =============================================
+   EFFECT CHIPS — active card effect indicators
+   ============================================= */
+
+.duel-effect-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.duel-effect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow:
+    inset 1px 1px 4px rgba(0, 0, 0, 0.40),
+    inset -1px -1px 3px rgba(60, 35, 100, 0.10);
+}
+
+/* Attack buffs: amber */
+.duel-effect-chip--attack {
+  color: #D97706;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(49, 28, 6, 0.60);
+}
+
+/* Defensive: indigo */
+.duel-effect-chip--defend {
+  color: #a5b4fc;
+  border: 1px solid rgba(79, 70, 229, 0.40);
+  background: rgba(22, 18, 60, 0.65);
+}
+
+/* Wildcards: violet */
+.duel-effect-chip--wild {
+  color: #e9d5ff;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(76, 29, 149, 0.35);
+}
+
+.duel-effect-overflow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ink-400);
+  white-space: nowrap;
+  padding: 4px 6px;
+}
+
+/* =============================================
+   SPEECH BUBBLES
+   ============================================= */
+
+.duel-speech {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  max-width: min(240px, 44vw);
+  pointer-events: none;
+  z-index: 20;
+  bottom: 110%;
+  box-shadow:
+    -3px -3px 8px rgba(50, 30, 90, 0.28),
+     3px  3px 10px rgba(0, 0, 0, 0.55);
+}
+
+.duel-speech--player {
+  left: 0;
+  background: var(--surface-2);
+  border-left: 3px solid #D97706;
+  color: var(--ink-900);
+}
+
+.duel-speech--boss {
+  right: 0;
+  background: var(--surface-3);
+  border-left: 3px solid #4F46E5;
+  color: var(--ink-700);
+}
+
+.duel-speech-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* =============================================
+   RECAP MODAL
+   ============================================= */
+
+.duel-recap-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(18, 9, 29, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+@media (min-width: 640px) {
+  .duel-recap-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+}
+
+.duel-recap-sheet {
+  background: var(--surface-1);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 512px;
+  max-height: min(92dvh, 680px);
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    -6px -6px 16px rgba(50, 30, 90, 0.35),
+     6px  6px 20px rgba(0, 0, 0, 0.60);
+}
+
+@media (min-width: 640px) {
+  .duel-recap-sheet {
+    border-radius: 20px;
+  }
+}
+
+.duel-recap-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--surface-3);
+  flex-shrink: 0;
+}
+
+.duel-recap-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  color: var(--ink-900);
+}
+
+.duel-recap-title-icon {
+  color: #D97706;
+}
+
+.duel-recap-sub {
+  font-size: 12px;
+  color: var(--ink-500);
+  margin-top: 4px;
+}
+
+.duel-recap-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overscroll-behavior: contain;
+}
+
+/* 2x2 stats grid */
+.duel-recap-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.duel-recap-stat-well {
+  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.45),
+    inset -1px -1px 4px rgba(60, 35, 100, 0.12);
+}
+
+.duel-recap-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+}
+
+.duel-recap-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+/* Question log */
+.duel-recap-log-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.duel-recap-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 40dvh;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.38),
+    inset -1px -1px 4px rgba(60, 35, 100, 0.10);
+}
+
+.duel-recap-log-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--surface-3);
+}
+
+.duel-recap-log-row:last-child {
+  border-bottom: none;
+}
+
+.duel-recap-log-icon--correct {
+  color: #D97706;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.duel-recap-log-icon--wrong {
+  color: #4F46E5;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.duel-recap-log-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.duel-recap-log-stem {
+  font-size: 12px;
+  color: var(--ink-700);
+  line-height: 1.4;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.duel-recap-log-picked {
+  font-size: 11px;
+  color: var(--ink-500);
+}
+
+.duel-recap-answer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(217, 119, 6, 0.10);
+  border: 1px solid rgba(217, 119, 6, 0.30);
+  color: #D97706;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Leaderboard context */
+.duel-recap-leaderboard {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--ink-500);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.38),
+    inset -1px -1px 4px rgba(60, 35, 100, 0.10);
+}
+
+.duel-recap-leaderboard-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+/* CTA row */
+.duel-recap-cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px 20px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .duel-recap-cta-row {
+    flex-direction: row;
+  }
+}
+
+/* Neumorphic CTA button */
+.duel-recap-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.duel-recap-btn--primary {
+  background: var(--surface-2);
+  color: #D97706;
+  box-shadow:
+    -3px -3px 8px rgba(50, 30, 90, 0.28),
+     3px  3px 10px rgba(0, 0, 0, 0.55),
+     0 0 0 1px rgba(217, 119, 6, 0.25);
+}
+
+.duel-recap-btn--primary:hover {
+  box-shadow:
+    -4px -4px 10px rgba(60, 35, 100, 0.35),
+     4px  4px 12px rgba(0, 0, 0, 0.60),
+     0 0 0 1px rgba(217, 119, 6, 0.40);
+  transform: translateY(-1px);
+}
+
+.duel-recap-btn--secondary {
+  background: var(--surface-2);
+  color: var(--ink-700);
+  box-shadow:
+    -3px -3px 8px rgba(50, 30, 90, 0.28),
+     3px  3px 10px rgba(0, 0, 0, 0.55);
+}
+
+.duel-recap-btn--secondary:hover {
+  box-shadow:
+    -4px -4px 10px rgba(60, 35, 100, 0.35),
+     4px  4px 12px rgba(0, 0, 0, 0.60);
+  transform: translateY(-1px);
+}
+
+.duel-recap-btn:active {
+  box-shadow:
+    inset -2px -2px 5px rgba(50, 30, 90, 0.22),
+    inset  2px  2px 7px rgba(0, 0, 0, 0.50);
+  transform: translateY(0);
+}
+
+.duel-recap-btn:focus-visible {
+  outline: 2px solid rgba(143, 126, 179, 0.55);
+  outline-offset: 2px;
+}
+
+/* Recap tab wrappers keep card look, but disable hover/press motion */
+.reading-page .card-surface.recap-card-static,
+.reading-page .card-surface.recap-card-static:hover,
+.reading-page .card-surface.recap-card-static:active {
+  transform: none !important;
+  transition: none !important;
+  box-shadow:
+    3px 3px 6px rgba(26, 18, 37, 0.1),
+    0 2px 4px rgba(26, 18, 37, 0.06),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(26, 18, 37, 0.04) !important;
+}
+
+/* =============================================
+   BOOSTER MODAL
+   ============================================= */
+
+/* ============================================================
+   DUEL BOOSTER MODAL — Redesigned for minimalist 3D aesthetic
+   Matches /portal "How it Works" modal design
+   ============================================================ */
+
+.duel-booster-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(18, 9, 29, 0.70);
+  backdrop-filter: blur(6px);
+  padding: 24px;
+}
+
+.duel-booster-sheet {
+  width: 100%;
+  max-width: 900px;
+  padding: 32px;
+  overflow: visible;
+  transform: none !important;
+  transition: none !important;
+}
+
+@media (max-width: 640px) {
+  .duel-booster-sheet {
+    max-width: 100%;
+    padding: 20px 16px;
+  }
+}
+
+.duel-booster-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.duel-booster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .duel-booster-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+.duel-booster-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.duel-booster-card--spent {
+  opacity: 0.45;
+}
+
+/* ============================================================
+   CLOSE BUTTON — Glassmorphic /Portal Style
+   ============================================================ */
+
+.duel-booster-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  color: var(--ink-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -6px 12px rgba(255, 255, 255, 0.03),
+    0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.duel-booster-close-btn:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  color: var(--ink-900);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -8px 14px rgba(255, 255, 255, 0.05),
+    0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.duel-booster-close-btn:active {
+  transform: scale(0.95);
+}
+
+.duel-booster-close-btn:focus-visible {
+  outline: 2px solid var(--ink-400);
+  outline-offset: 2px;
+}
+
+/* Card Art — natural tarot ratio, no crop */
+.duel-booster-card__art {
+  position: relative;
+  border-radius: 0;
+  overflow: visible;
+  border: none;
+  background: transparent;
+}
+
+
+.duel-booster-card__image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+}
+
+/* K.tizz lock overlay */
+.duel-booster-card__lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 9, 29, 0.82);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.duel-booster-card__lock-icon {
+  color: #4F46E5;
+}
+
+.duel-booster-card__lock-heading {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.duel-booster-card__lock-copy {
+  font-size: 9px;
+  color: var(--ink-500);
+  line-height: 1.4;
+}
+
+/* Meta Info — Typography Hierarchy */
+.duel-booster-card__meta {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Slot label — de-emphasised label */
+.duel-booster-card__slot {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+/* Card name — primary heading */
+.duel-booster-card__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-900);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+}
+
+/* Effect description — tertiary, quiet */
+.duel-booster-card__effect {
+  font-size: 11px;
+  color: var(--ink-400);
+  line-height: 1.45;
+}
+
+/* Action Container */
+.duel-booster-card__actions {
+  padding: 0;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Oracle button size overrides — modal Use button */
+.reading-page .oracle-button.duel-booster-card__oracle-btn {
+  --border-radius: 8px;
+  min-height: unset;
+  padding: 4px 16px;
+  font-size: 11px;
+}
+
+/* Oracle button size overrides — header Boosters button */
+.reading-page .oracle-button.duel-header-oracle-btn {
+  --border-radius: 8px;
+  min-height: unset;
+  padding: 4px 12px;
+  font-size: 11px;
+}
+
+/* Fullscreen button — icon only; hide empty label wrapper so glyph centers (compact CTA keeps a flex gap + txt column otherwise) */
+.reading-page .oracle-button.duel-header-oracle-btn--fullscreen {
+  padding: 6px 10px;
+  min-width: 2.75rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.reading-page .oracle-button.duel-header-oracle-btn--fullscreen .oracle-button-txt-wrap {
+  display: none;
+}
+
+.reading-page .oracle-button.duel-header-oracle-btn--fullscreen .reading-nav-oracle-cta-inner {
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+
+/* Use Button — 3D minimal style */
+.duel-booster-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+  background: rgba(167, 139, 250, 0.1);
+  color: #a78bfa;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.duel-booster-card__btn:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.duel-booster-card__btn:active:not(:disabled) {
+  background: rgba(167, 139, 250, 0.2);
+}
+
+.duel-booster-card__btn:focus-visible {
+  outline: 1px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+.duel-booster-card__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.duel-booster-card__btn--locked {
+  background: rgba(167, 139, 250, 0.05);
+  color: var(--ink-400);
+  cursor: not-allowed;
+}
+
+/* Status Badge — Spent */
+.duel-booster-card__status {
+  font-size: 11px;
+  color: var(--ink-400);
+  text-align: center;
+  padding: 8px 0;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Passive Badge — Judgement Auto-revive */
+.duel-booster-card__passive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ink-500);
+  padding: 8px 0;
+  font-weight: 500;
 }
 
 /*
@@ -2298,4 +4551,2620 @@
   .qflow-custom-wrap--enter {
     animation: none;
   }
+}
+
+/* ============================================================
+   ENTROPY ARENA — Boss Background Scenes
+   ============================================================ */
+
+.arena-scene--planck {
+  background-color: #0e0820;
+  background-image:
+    radial-gradient(ellipse at 50% 100%, rgba(217, 119, 6, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 30% 60%, rgba(124, 58, 237, 0.18) 0%, transparent 65%),
+    radial-gradient(circle at 50% 50%, #1a0f35 0%, #0e0820 100%);
+  animation:
+    planck-fog 12s ease-in-out infinite alternate,
+    planck-glow 6s ease-in-out infinite alternate,
+    chop-flicker 2.6s ease-in-out infinite;
+}
+
+@keyframes planck-fog {
+  0% { background-position: 0% 0%, 30% 60%, center; }
+  100% { background-position: 0% 0%, 50% 50%, center; }
+}
+
+@keyframes planck-glow {
+  0% { --planck-glow-opacity: 0.05; }
+  100% { --planck-glow-opacity: 0.12; }
+}
+
+.arena-scene--ktizz {
+  background-color: #130a00;
+  background-image:
+    radial-gradient(circle at 85% 15%, rgba(217, 119, 6, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 15% 85%, rgba(217, 119, 6, 0.10) 0%, transparent 40%),
+    linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, transparent 50%, rgba(217, 119, 6, 0.06) 100%),
+    radial-gradient(circle at 50% 50%, #1f1200 0%, #130a00 100%);
+  animation:
+    ktizz-pulse 4s ease-in-out infinite alternate,
+    chop-flicker 2.4s ease-in-out infinite;
+}
+
+@keyframes ktizz-pulse {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.06); }
+}
+
+.arena-scene--chop {
+  background-color: #06030f;
+  background-image:
+    radial-gradient(circle at 70% 30%, rgba(139, 0, 139, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 30% 70%, rgba(167, 139, 250, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, #100820 0%, #06030f 100%);
+  animation: chop-flicker 2s ease-in-out infinite;
+}
+
+@keyframes chop-flicker {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(0.92); }
+  75% { filter: brightness(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-scene--planck,
+  .arena-scene--ktizz,
+  .arena-scene--chop {
+    animation: none;
+  }
+}
+
+
+/* ============================================================
+   ENTROPY ARENA — Character Frames & HP Bars
+   ============================================================ */
+
+.duel-character-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.duel-character-frame__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.6), 0 0 20px rgba(124, 58, 237, 0.2);
+  flex-shrink: 0;
+}
+
+.duel-character-frame__avatar--boss-0 {
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.6), 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+.duel-character-frame__avatar--boss-1 {
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.6), 0 0 20px rgba(217, 119, 6, 0.2);
+}
+
+.duel-character-frame__avatar--boss-2 {
+  box-shadow: 0 0 0 2px rgba(220, 50, 50, 0.6), 0 0 20px rgba(167, 139, 250, 0.2);
+}
+
+/* ============================================================
+   ENTROPY ARENA — Clash Layout (CodePen-inspired)
+   ============================================================ */
+
+/* Fills `reading-main--arena` (flex parent); min-height:0 + overflow hidden = flex chain fits viewport (no stage scroll) */
+.reading-page main.reading-main--arena > .arena-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overscroll-behavior-y: none;
+}
+
+.arena-stage {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  /* Duel layout only uses .arena-stage; keep Y clipped so the page does not scroll mid-run */
+  overflow-y: hidden;
+  overscroll-behavior-y: contain;
+}
+
+.arena-app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.arena-app--duel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding-top: 0;
+}
+
+/* Interaction panel: bottom sheet, neumorphic raised */
+.duel-panel {
+  position: relative;
+  background-color: var(--surface-1);
+  border-radius: 24px 24px 0 0;
+  box-shadow:
+    -6px -6px 16px rgba(50, 30, 90, 0.35),
+     6px  6px 20px rgba(0, 0, 0, 0.60),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px env(safe-area-inset-bottom, 0px);
+  height: auto;
+  max-height: 70dvh;
+  min-height: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Dot grid backdrop */
+.duel-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle, rgba(167, 139, 250, 0.35) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  border-radius: 24px 24px 0 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (min-width: 768px) {
+  .duel-panel {
+    height: auto;
+    max-height: 65dvh;
+  }
+}
+
+.duel-panel-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  position: relative;
+  z-index: 1;
+  background-image:
+    radial-gradient(circle, rgba(167, 139, 250, 0.40) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  border-radius: 20px;
+  padding: 12px;
+}
+
+.arena-hud,
+.arena-battle-panel,
+.arena-panel {
+  border-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(16, 20, 42, 0.92), rgba(9, 12, 28, 0.94));
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.arena-hud {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(20, 24, 46, 0.96), rgba(12, 15, 34, 0.96));
+}
+
+.arena-duel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(20, 24, 46, 0.96), rgba(12, 15, 34, 0.96));
+  box-shadow: 0 10px 30px rgba(8, 4, 18, 0.35);
+  border-radius: 18px;
+  padding: 10px 14px;
+}
+
+@media (max-width: 767px) {
+  .arena-duel-header {
+    left: max(1rem, env(safe-area-inset-left, 0px));
+    right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+}
+
+.arena-avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--ink-900);
+  min-width: 0;
+}
+
+.arena-booster-btn {
+  position: relative;
+  background:
+    linear-gradient(165deg, rgba(167, 139, 250, 0.26), rgba(31, 23, 52, 0.92));
+  border-color: rgba(167, 139, 250, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 22px rgba(6, 3, 15, 0.5);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.arena-booster-btn:hover {
+  border-color: rgba(167, 139, 250, 0.55);
+  background:
+    linear-gradient(165deg, rgba(167, 139, 250, 0.38), rgba(31, 23, 52, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 12px 26px rgba(6, 3, 15, 0.55),
+    0 0 18px rgba(124, 58, 237, 0.28);
+  transform: translateY(-1px);
+}
+
+.arena-booster-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(167, 139, 250, 0.7),
+    0 0 0 6px rgba(17, 10, 32, 0.75),
+    0 12px 26px rgba(6, 3, 15, 0.55);
+}
+
+.arena-booster-btn .arena-avatar-face {
+  background: linear-gradient(180deg, rgba(180, 146, 255, 0.5), rgba(76, 29, 149, 0.42));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 6px 16px rgba(76, 29, 149, 0.32);
+}
+
+
+.arena-booster-btn .arena-avatar-name {
+  color: var(--ink-900);
+}
+
+.arena-booster-btn .arena-avatar-sub {
+  color: var(--ink-300);
+}
+
+.arena-booster-btn .arena-booster-count {
+  color: color-mix(in srgb, var(--ink-300) 85%, transparent);
+}
+
+.arena-booster-btn:disabled {
+  transform: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.arena-avatar-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.arena-avatar-face {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(180, 146, 255, 0.22), rgba(118, 231, 255, 0.12));
+  font-size: 1.8rem;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.arena-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.arena-avatar-meta {
+  min-width: 0;
+  text-align: left;
+}
+
+.arena-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arena-avatar-name {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arena-avatar-sub {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--ink-500);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arena-booster-count {
+  margin-right: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--ink-400) 70%, transparent);
+}
+
+.arena-hud-stats {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.arena-hud-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+
+.arena-hud-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+
+
+
+.arena-hud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  color: var(--ink-700);
+}
+
+.arena-hud-pill--bossbar {
+  gap: 10px;
+}
+
+.arena-hud-pill--bossbar {
+  gap: 10px;
+}
+
+.arena-hud-pill--hp strong {
+  color: #ffd2dc;
+}
+
+.arena-hud-pill--boss strong {
+  color: #ffd667;
+}
+
+.arena-hud-pill--score strong {
+  color: #76e7ff;
+}
+
+.arena-battle-panel {
+  padding: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.arena-scene {
+  position: relative;
+  height: 100%;
+  overflow: visible;
+}
+
+.arena-stars,
+.arena-mist,
+.arena-trees,
+.arena-path,
+.arena-ground {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.arena-stars {
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255,255,255,0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 25% 12%, rgba(255,255,255,0.85) 0 1px, transparent 2px),
+    radial-gradient(circle at 48% 15%, rgba(255,255,255,0.8) 0 1px, transparent 2px),
+    radial-gradient(circle at 64% 10%, rgba(255,255,255,0.7) 0 1px, transparent 2px),
+    radial-gradient(circle at 80% 18%, rgba(255,255,255,0.85) 0 1px, transparent 2px),
+    radial-gradient(circle at 90% 8%, rgba(255,255,255,0.7) 0 1px, transparent 2px);
+  opacity: 0.7;
+}
+
+.arena-mist {
+  background:
+    radial-gradient(circle at 18% 30%, rgba(255,255,255,0.08), transparent 30%),
+    radial-gradient(circle at 70% 22%, rgba(122, 185, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 40% 64%, rgba(255,255,255,0.06), transparent 38%);
+  animation: drift 16s linear infinite;
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+.arena-trees--far {
+  display: none;
+}
+
+.arena-trees--mid {
+  display: none;
+}
+
+.arena-trees--near {
+  display: none;
+}
+
+.arena-path {
+  display: none;
+}
+
+.arena-ground {
+  display: none;
+}
+
+
+.arena-fighter {
+  position: absolute;
+  bottom: 30px;
+  width: 100px;
+  height: 130px;
+  display: grid;
+  place-items: end center;
+  transform-origin: center bottom;
+  z-index: 4;
+  /* Subtle idle hover to give the duel scene a living feel. */
+  animation: arena-fighter-float 4.8s ease-in-out infinite;
+}
+
+.arena-fighter--player {
+    left: calc(var(--duel-avatar-x-player, 29%) - 50px);
+}
+
+.arena-fighter--enemy {
+  left: calc(var(--duel-avatar-x-boss, 71%) - 50px);
+  /* Same phase as player — staggered delay made one fighter read “higher” depending on viewport/time. */
+}
+
+.arena-fighter-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+  transform-origin: center center;
+}
+
+@keyframes arena-fighter-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Damage shake animation — applied via GSAP in GameDuelPanel.tsx */
+@keyframes damageShake {
+  0%, 100% { transform: translateX(0) skewY(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px) skewY(1deg); }
+  20%, 40%, 60%, 80% { transform: translateX(2px) skewY(-1deg); }
+}
+
+/* Legacy centered chips (non-duel). Duel uses .duel-arena-scene + side floaters — reset below. */
+.arena-float {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(10, 12, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.28);
+  animation: arena-float-pop 3s ease forwards;
+  pointer-events: none;
+}
+
+/* Drop inherited left:50% / translateX(-50%) so side floaters win; `none` clears legacy .arena-float until keyframes run. */
+.duel-arena-scene .arena-float {
+  left: auto;
+  right: auto;
+  transform: none;
+}
+
+.arena-float--score {
+  top: -44px;
+}
+
+.arena-float--hp {
+  top: -22px;
+}
+
+.arena-float--boss {
+  top: -40px;
+}
+
+.arena-float--gain {
+  color: #fef3c7;
+  border-color: rgba(217, 119, 6, 0.45);
+  background: rgba(49, 28, 6, 0.85);
+}
+
+.arena-float--loss,
+.arena-float--dmg {
+  color: #c7d2fe;
+  border-color: rgba(79, 70, 229, 0.45);
+  background: rgba(22, 18, 60, 0.85);
+}
+
+.arena-float--heal {
+  color: #fde68a;
+  border-color: rgba(217, 119, 6, 0.45);
+  background: rgba(49, 28, 6, 0.85);
+}
+
+@keyframes arena-float-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.96);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-18px) scale(1.02);
+  }
+}
+
+.arena-fighter-glyph {
+  font-size: 3.4rem;
+  line-height: 1;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28));
+  user-select: none;
+}
+
+.arena-panel {
+  padding: 16px 18px 18px;
+  background: linear-gradient(180deg, rgba(14, 18, 38, 0.98), rgba(11, 14, 28, 0.98));
+}
+
+.arena-panel-inner {
+  display: grid;
+  gap: 12px;
+}
+
+.arena-prompt-head {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+
+.arena-prompt-title {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--ink-900);
+}
+
+.arena-prompt-copy {
+  margin: 0;
+  color: var(--ink-500);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.arena-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.arena-choice-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  justify-content: center;
+}
+
+.arena-choice-btn {
+  width: 100%;
+}
+
+.arena-status {
+  margin: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.arena-status--danger {
+  border: 1px solid rgba(79, 70, 229, 0.35);
+  background: rgba(28, 24, 77, 0.6);
+  color: #c7d2fe;
+}
+
+.arena-status--hint {
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: rgba(76, 29, 149, 0.35);
+  color: #ddd6fe;
+}
+
+.arena-feedback {
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 12, 32, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.arena-feedback--correct {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(40, 23, 6, 0.75);
+}
+
+.arena-feedback--wrong {
+  border-color: rgba(79, 70, 229, 0.35);
+  background: rgba(22, 18, 60, 0.75);
+}
+
+.arena-feedback-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.arena-feedback-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-900);
+}
+
+.arena-feedback-sub {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.arena-feedback-stem {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ink-700);
+}
+
+.arena-feedback-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.arena-feedback-score {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink-700);
+}
+
+.arena-feedback-answer {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-300);
+}
+
+.arena-feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.arena-feedback-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 140px));
+  justify-content: center;
+}
+
+.arena-feedback-option {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-700);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.arena-feedback-option--correct {
+  border-color: rgba(217, 119, 6, 0.45);
+  color: #fde68a;
+  background: rgba(49, 28, 6, 0.75);
+}
+
+.arena-feedback-option--wrong {
+  border-color: rgba(79, 70, 229, 0.45);
+  color: #c7d2fe;
+  background: rgba(22, 18, 60, 0.75);
+}
+
+.arena-loading {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ink-500);
+}
+
+.arena-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+@media (max-width: 860px) {
+  .arena-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .arena-hud {
+    grid-template-columns: 1fr;
+  }
+
+  .arena-hud-stats {
+    justify-content: start;
+  }
+
+  .arena-avatar-row {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .arena-scene {
+    height: 100%;
+  }
+
+  .arena-fighter {
+    width: 80px;
+    height: 110px;
+    bottom: 28px;
+    animation-duration: 5.2s;
+  }
+
+  .arena-fighter--player {
+    left: calc(var(--duel-avatar-x-player, 29%) - 40px);
+  }
+
+  .arena-fighter--enemy {
+    left: calc(var(--duel-avatar-x-boss, 71%) - 40px);
+  }
+
+  .arena-fighter-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* Duel damage/score floaters — 80px avatars: half-width 40px */
+  .arena-float--player-floater {
+    left: calc(var(--duel-avatar-x-player, 29%) + 40px + 10px);
+    transform: none;
+  }
+
+  .arena-float--boss-floater {
+    right: calc((100% - var(--duel-avatar-x-boss, 71%)) + 40px + 10px);
+    left: auto;
+    transform: none;
+  }
+
+  .arena-choice-grid,
+  .arena-choice-grid--two {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-fighter {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .arena-app {
+    grid-template-rows: minmax(72px, 14%) 1fr minmax(200px, 34%);
+  }
+
+  .arena-panel {
+    padding: 14px 14px 16px;
+  }
+}
+
+@media (max-width: 639px) {
+  .duel-character-frame__avatar {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ============================================================
+   ENTROPY ARENA — Speech Bubbles
+   ============================================================ */
+
+.duel-speech-bubble {
+  position: absolute;
+  top: -3rem;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  background: var(--surface-3);
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-700);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 20;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.duel-speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--surface-3);
+}
+
+/* ============================================================
+   ENTROPY ARENA — Timer Bar
+   ============================================================ */
+
+.arena-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arena-timer-count {
+  min-width: 3.25rem;
+  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink-700);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.duel-timer-bar {
+  height: 4px;
+  width: 100%;
+  background: var(--surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.duel-timer-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.25s linear, background-color 0.3s ease;
+}
+
+.duel-timer-bar__fill--normal { background-color: var(--color-primary, #7c3aed); }
+.duel-timer-bar__fill--warning { background-color: #D97706; }
+.duel-timer-bar__fill--danger { background-color: #4F46E5; }
+
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.duel-timer-bar__fill--warning {
+  animation: timer-pulse 3s ease-in-out infinite;
+}
+
+/* ============================================================
+   ENTROPY ARENA — Power-Up Modal
+   ============================================================ */
+
+.duel-powerup-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(18, 9, 29, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.duel-powerup-modal {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+.duel-powerup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.1rem 1.4rem;
+}
+
+.duel-powerup-card {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
+.duel-powerup-card--spent {
+  opacity: 0.45;
+}
+
+.duel-powerup-card__art {
+  position: relative;
+  width: min(42vw, 180px);
+  display: grid;
+  place-items: center;
+}
+
+.duel-powerup-card__image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+}
+
+.duel-powerup-card__lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  background: rgba(6, 3, 15, 0.72);
+}
+
+
+.duel-powerup-card__lock-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+.duel-powerup-card__lock-copy {
+  margin: 0;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--ink-500);
+  padding: 0 0.6rem;
+}
+
+.duel-powerup-card__meta {
+  width: 100%;
+  text-align: center;
+}
+
+.duel-powerup-card__slot {
+  margin: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.duel-powerup-card__name {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.duel-powerup-card__meaning {
+  margin: 0.3rem 0 0;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--ink-500);
+}
+
+.duel-powerup-card__rule {
+  width: 120px;
+  height: 1px;
+  margin: 0.6rem auto 0.4rem;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(167, 139, 250, 0.15) 25%,
+    rgba(167, 139, 250, 0.5) 50%,
+    rgba(167, 139, 250, 0.15) 75%,
+    transparent 100%
+  );
+}
+
+.duel-powerup-card__effect {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--ink-300);
+  line-height: 1.45;
+}
+
+.duel-powerup-card__actions {
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.duel-powerup-card__status {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-400);
+  text-align: center;
+}
+
+.duel-powerup-card__btn {
+  width: auto;
+  min-width: 120px;
+  padding: 0.5rem 1.05rem;
+  border-radius: 999px;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(167, 139, 250, 0.12);
+  color: var(--ink-900);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.duel-powerup-card__btn:hover {
+  border-color: rgba(167, 139, 250, 0.6);
+  background: rgba(167, 139, 250, 0.22);
+  transform: translateY(-1px);
+}
+
+.duel-powerup-card__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.duel-powerup-card__btn--locked {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink-500);
+}
+
+/* ============================================================
+   ENTROPY ARENA — Game Profile Loader (3-dot spinner)
+   ============================================================ */
+
+.game-profile-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.game-profile-loader__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--accent-light, #a78bfa);
+  animation: game-profile-dot-bounce 0.9s ease-in-out infinite;
+}
+
+.game-profile-loader__dot:nth-child(2) { animation-delay: 0.15s; }
+.game-profile-loader__dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes game-profile-dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
+  40% { transform: translateY(-5px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-profile-loader__dot {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+/* ============================================================
+   ENTROPY ARENA — Booster Cards Reveal
+   ============================================================ */
+
+.booster-cards-reveal__card-art {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.booster-cards-fan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.booster-cards-fan__card {
+  flex: 0 0 auto;
+  width: min(35vw, 180px);
+}
+
+.booster-cards-fan__card:first-child {
+  transform: rotate(-7deg) translateY(4px);
+}
+.booster-cards-fan__card:last-child {
+  transform: rotate(7deg) translateY(4px);
+}
+
+.booster-reveal-row {
+  width: 100%;
+}
+
+.booster-reveal-card {
+  width: min(92vw, 280px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+
+.booster-reveal-card__art {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.booster-reveal-card__info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+  text-align: center;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.booster-reveal-card__info p {
+  margin: 0;
+}
+
+.booster-reveal-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink-900);
+  line-height: 1.2;
+}
+
+.booster-reveal-card__meaning {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-500);
+  line-height: 1.45;
+}
+
+.booster-reveal-card__divider {
+  width: 120px;
+  height: 1px;
+  margin: 0.3rem 0 0.2rem;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(167, 139, 250, 0.08) 12%,
+    rgba(167, 139, 250, 0.2) 24%,
+    rgba(167, 139, 250, 0.38) 36%,
+    rgba(149, 117, 241, 0.6) 46%,
+    rgba(124, 58, 237, 0.85) 50%,
+    rgba(149, 117, 241, 0.6) 54%,
+    rgba(167, 139, 250, 0.38) 64%,
+    rgba(167, 139, 250, 0.2) 76%,
+    rgba(167, 139, 250, 0.08) 88%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.28);
+  border-radius: 0;
+}
+
+.booster-reveal-card__effect-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.booster-reveal-card__effect-text {
+  font-size: 11px;
+  color: var(--ink-400);
+  line-height: 1.45;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .booster-cards-fan__card {
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   DUEL QUESTION PANEL — Refactored Design (Cohesive w/ GameRecapPage)
+   ============================================================ */
+
+.duel-question-section {
+  width: 100%;
+  height: auto;
+  padding: 40px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+
+.duel-question-container {
+  width: 100%;
+  max-width: 48rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: visible;
+}
+
+
+/* Effects Row */
+.duel-effects-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.duel-effect-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.duel-effect-badge--attack {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+}
+
+.duel-effect-badge--defend {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #93C5FD;
+}
+
+.duel-effect-badge--wild {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.4);
+  color: #E9D5FF;
+}
+
+.duel-effect-badge--more {
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.3);
+  color: var(--ink-500);
+}
+
+/* Status Hints */
+.duel-status-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.duel-status-hint--hint {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--ink-600);
+}
+
+.duel-status-hint--danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #FCA5A5;
+  font-weight: 500;
+}
+
+/* Main Question Content Card */
+.duel-question-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.12);
+  background: var(--surface-1);
+  backdrop-filter: blur(8px);
+  overflow: visible;
+  height: auto;
+}
+
+.duel-question-stem {
+  color: var(--ink-900);
+  line-height: 1.45;
+  font-size: clamp(1rem, 3.8vw + 0.4rem, 1.875rem);
+  font-weight: 600;
+  text-align: center;
+}
+
+.duel-question-prompt {
+  color: var(--ink-500);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Timer Bar */
+.duel-timer-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.duel-timer-track {
+  width: 100%;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--surface-3);
+}
+
+.duel-timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7C3AED, #A78BFA);
+  border-radius: 999px;
+  transition: width 0.1s ease, background 0.3s ease;
+}
+
+.duel-timer-fill--critical {
+  background: linear-gradient(90deg, #EF4444, #FCA5A5);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Feedback Card */
+.duel-feedback-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.duel-feedback-card--correct {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.duel-feedback-card--wrong {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.duel-feedback-card h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.duel-feedback-card p {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Choices Grid — Fixed layout to prevent shift between TF and MCQ */
+.duel-choices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  grid-auto-rows: minmax(56px, 1fr);
+}
+
+.duel-choices-grid--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.duel-choice-btn {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  background: var(--surface-2);
+  color: var(--ink-900);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  /* Restrict transitions to avoid class-switch snap/glitch during reveal handoff. */
+  transition:
+    background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.14s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.duel-choice-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.duel-choice-btn:not(:disabled):hover {
+  background: var(--surface-3);
+  border-color: rgba(167, 139, 250, 0.35);
+  color: var(--ink-900);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.12);
+}
+
+.duel-choice-btn:not(:disabled):active {
+  transform: translateY(0);
+  background: var(--surface-2);
+  border-color: #a78bfa;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.duel-choice-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.duel-choice-btn--loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.duel-choice-btn--eliminated {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--surface-0);
+  border-color: var(--surface-2);
+  color: var(--ink-600);
+}
+
+.duel-choice-btn--hint {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.08);
+  color: #FDE047;
+}
+
+.duel-choice-btn--hint:not(:disabled):hover {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.duel-choice-btn--primary {
+  border-color: rgba(167, 139, 250, 0.4);
+  background: var(--surface-2);
+  color: var(--ink-900);
+  font-weight: 500;
+}
+
+.duel-choice-btn--primary:not(:disabled):hover {
+  border-color: rgba(167, 139, 250, 0.7);
+  background: var(--surface-3);
+}
+
+/* Selected State — User has chosen this option */
+.duel-choice-btn--selected {
+  border-color: rgba(167, 139, 250, 0.7);
+  background: var(--surface-3);
+  color: var(--ink-900);
+  box-shadow: 0 0 16px rgba(167, 139, 250, 0.2);
+  transform: scale(1.02);
+  opacity: 1;
+}
+
+/* Correct Answer State — Shown when revealing answers */
+.duel-choice-btn--correct {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  color: #6ee7b7;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25), inset 0 1px 2px rgba(16, 185, 129, 0.1);
+  pointer-events: none;
+  opacity: 1;
+}
+
+.duel-choice-btn--correct::before {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+}
+
+/* Wrong Answer State — Shown when revealing answers */
+.duel-choice-btn--wrong {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2), inset 0 1px 2px rgba(239, 68, 68, 0.1);
+  pointer-events: none;
+  opacity: 1;
+}
+
+.duel-choice-btn--wrong::before {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, transparent 70%);
+}
+
+/* Loading State */
+.duel-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .duel-question-section {
+    padding: 14px max(12px, env(safe-area-inset-left, 0px)) 20px max(12px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .duel-choice-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .duel-choices-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Keep 2×2 for four-option MCQ; single-column was forcing excess vertical scroll */
+  .duel-choices-grid:not(.duel-choices-grid--two) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    grid-auto-rows: minmax(44px, auto);
+  }
+
+  .arena-float {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+}
+
+/* ============================================================
+   DUEL LAYOUT — Header, Area Container, Arena Scene
+   ============================================================ */
+
+.duel-header-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 20px;
+  row-gap: 8px;
+}
+
+.duel-header-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 36px;
+  row-gap: 8px;
+}
+
+/* Booster Button — compact inline pill */
+.duel-booster-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  background: var(--surface-2);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 7px;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.duel-booster-btn:not(:disabled):hover {
+  background: var(--surface-3);
+  border-color: rgba(167, 139, 250, 0.45);
+  color: var(--ink-900);
+}
+
+.duel-booster-btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.duel-booster-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.duel-booster-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #A78BFA;
+}
+
+.duel-booster-count {
+  font-size: 0.75rem;
+  color: var(--ink-500);
+  font-weight: 500;
+}
+
+.duel-booster-lock {
+  color: #FCA5A5;
+}
+
+/* Fullscreen Button */
+.duel-fullscreen-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: 6px;
+  color: var(--ink-400);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.duel-fullscreen-btn:hover {
+  background: var(--surface-2);
+  border-color: rgba(167, 139, 250, 0.4);
+  color: var(--ink-700);
+}
+
+.duel-fullscreen-btn:active {
+  transform: scale(0.93);
+}
+
+/* Score Display */
+.duel-score-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--ink-700);
+  font-weight: 500;
+}
+
+.duel-score-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #A78BFA;
+}
+
+/* ============================================================
+   Duel Area Container — Fixed height, contains HUD + Arena
+   ============================================================ */
+
+/* REMOVED DUPLICATE - Using primary definition above at line 2249 */
+
+/* HUD Row — Top of duel area */
+.duel-area-hud {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  width: 100%;
+  /* HUD handled by DuelHUD component */
+}
+
+/* Arena Scene — Fighters and background */
+.duel-arena-scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: visible;
+  /* Fighters positioned within this space; overflow:visible allows taunt bubbles to show */
+  /* Tighter lane than legacy 18%/78% — shared by fighters + damage floaters */
+  --duel-avatar-x-player: 29%;
+  --duel-avatar-x-boss: 71%;
+  /* Floater math: horizontal nudge in keyframes (mobile player uses -100% to sit left of avatar) */
+  --floater-dx: 0px;
+  --duel-avatar-half: 48px;
+  --duel-fighter-bottom: 30px;
+  /* Floater rails: slot 0 = one shared baseline for left/right; slot 1 = stacked row (player HP + PTS). */
+  --duel-floater-slot0-b: var(--duel-fighter-bottom);
+  /*
+   * Gap between stacked chips (difference in `bottom`). ≥ ~1 lower pill height or they overlap;
+   * mobile pills are compact — keep tighter than the old 2.05rem+ strip.
+   */
+  --duel-floater-stack-gap: clamp(1.48rem, 3.6dvh, 1.82rem);
+}
+
+/* Question Area — flex-grows under arena; desktop may scroll if content is extreme */
+.duel-question-area {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  background-color: var(--surface-0);
+  background-image: radial-gradient(circle, rgba(167, 139, 250, 0.09) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  /* Breathing room between battlefield and question copy (especially on tall desktop viewports) */
+  padding: clamp(16px, 2.2dvh, 28px) 0 0;
+  border-top: 1px solid rgba(167, 139, 250, 0.08);
+}
+
+/* Desktop running duel: fill the lower pane; park MCQ/TF tiles on the bottom with shared row growth */
+@media (min-width: 769px) {
+  .reading-page main.reading-main--arena .duel-question-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .reading-page main.reading-main--arena .duel-question-section {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* Center the capped-width column; stretch was leaving max-width blocks hugging the left edge. */
+    align-items: center;
+  }
+
+  .reading-page main.reading-main--arena .duel-question-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: min(100%, 48rem);
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reading-page main.reading-main--arena .duel-question-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .reading-page main.reading-main--arena .duel-choices-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    grid-auto-rows: minmax(64px, 1fr);
+    align-content: stretch;
+  }
+
+  .reading-page main.reading-main--arena .duel-choices-grid.duel-choices-grid--two {
+    grid-auto-rows: minmax(72px, 1fr);
+  }
+}
+
+/* Drop vertical centering from .duel-question-section so flex children can fill the duel pane */
+.reading-page main.reading-main--arena .duel-question-section {
+  justify-content: flex-start;
+}
+
+/* Arena Scene Background (existing styles should apply) */
+.arena-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Floaters — Glassmorphic design with high contrast colors */
+.arena-float {
+  position: absolute;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 8px;
+  backdrop-filter: blur(16px);
+  border: 1.5px solid;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: float-up-redesign 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+/* Motion: vertical drift + optional horizontal anchor via --floater-dx (mobile player = -100% width) */
+@keyframes float-up-redesign {
+  0% {
+    opacity: 1;
+    transform: translateX(var(--floater-dx, 0px)) translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(var(--floater-dx, 0px)) translateY(-40px) scale(0.85);
+  }
+}
+
+.arena-float--hp {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.arena-float--dmg {
+  color: #FFFFFF;
+  background: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow:
+    0 6px 20px rgba(239, 68, 68, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.arena-float--heal {
+  color: #FFFFFF;
+  background: rgba(34, 197, 94, 0.35);
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow:
+    0 6px 20px rgba(34, 197, 94, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.arena-float--score {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.arena-float--gain {
+  color: #FFFFFF;
+  background: rgba(34, 197, 94, 0.35);
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow:
+    0 6px 20px rgba(34, 197, 94, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.arena-float--loss {
+  color: #FFFFFF;
+  background: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow:
+    0 6px 20px rgba(239, 68, 68, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Shared vertical rails — `data-floater-slot` set in GameDuelPanel (score uses slot 0 when alone so it lines up with boss HP). */
+.duel-arena-scene .arena-float[data-floater-slot="0"],
+.duel-arena-scene .arena-float[data-floater-slot="1"] {
+  top: auto;
+}
+
+.duel-arena-scene .arena-float[data-floater-slot="0"] {
+  bottom: var(--duel-floater-slot0-b);
+  z-index: 5;
+}
+
+.duel-arena-scene .arena-float[data-floater-slot="1"] {
+  bottom: calc(var(--duel-floater-slot0-b) + var(--duel-floater-stack-gap));
+  /* Upper chip paints above the lower so any subpixel overlap still reads cleanly. */
+  z-index: 6;
+}
+
+/* Desktop (≥769px): player chips to the RIGHT of the arena avatar; boss chips to the LEFT */
+@media (min-width: 769px) {
+  .duel-arena-scene {
+    /* Lower than before: large bottom values sat chips under the HUD chrome; keep them over the fighters. */
+    --duel-floater-slot0-b: clamp(88px, 12dvh, 118px);
+    /* Was ~1rem–1.35rem — shorter than one pill; HP + PTS overlapped. Match ~full pill + sliver of air. */
+    --duel-floater-stack-gap: clamp(2.38rem, 5.1dvh, 2.95rem);
+  }
+
+  .duel-arena-scene .arena-float--player-floater {
+    --floater-dx: 0px;
+    left: calc(var(--duel-avatar-x-player, 29%) + 48px + 12px);
+    right: auto;
+    top: auto;
+  }
+
+  .duel-arena-scene .arena-float--boss-floater {
+    --floater-dx: 0px;
+    left: auto;
+    right: calc((100% - var(--duel-avatar-x-boss, 71%)) + 48px + 12px);
+    top: auto;
+  }
+}
+
+/* ≤768px: taller arena + floaters flank avatars at foot level (see FINAL mobile block for flex vars) */
+@media (max-width: 768px) {
+  .duel-arena-scene .arena-float--player-floater {
+    --floater-dx: -100%;
+    /* Right edge of chip kisses the gap left of the avatar; translateX(-100%) pulls it fully outward */
+    left: calc(var(--duel-avatar-x-player, 29%) - var(--duel-avatar-half, 48px) - 12px);
+    right: auto;
+    top: auto;
+  }
+
+  .duel-arena-scene .arena-float--boss-floater {
+    --floater-dx: 0px;
+    left: calc(var(--duel-avatar-x-boss, 71%) + var(--duel-avatar-half, 48px) + 12px);
+    right: auto;
+    top: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .duel-arena-scene {
+    --duel-fighter-bottom: 28px;
+    --duel-avatar-half: 40px;
+  }
+}
+
+/* ============================================================
+   Responsive — Mobile adjustments
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .duel-header-content {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 0.65rem max(0.75rem, env(safe-area-inset-left, 0px)) 0.65rem max(0.75rem, env(safe-area-inset-right, 0px));
+    gap: 0.75rem;
+  }
+
+  .duel-header-left {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    gap: clamp(12px, 4vw, 24px);
+  }
+
+  .duel-booster-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+
+  .duel-score-display {
+    font-size: 0.7rem;
+  }
+
+  .duel-score-value {
+    font-size: 0.9rem;
+  }
+
+  .duel-area-container {
+    /* Taller battlefield; FINAL block below is canonical for running duel */
+    flex: 0 1 40dvh;
+    min-height: clamp(132px, 30dvh, 260px);
+    max-height: min(46dvh, 400px);
+  }
+}
+
+/* ============================================================
+   GAME DUEL HEADER — 3D Minimalistic Design with Subtle Glow
+   Enhanced styling for: score, boosters, fullscreen button
+   ============================================================ */
+
+/* Main header container with 3D depth */
+.duel-header-fixed {
+  position: relative;
+  z-index: 100;
+  width: 100%;
+  background: linear-gradient(180deg,
+    rgba(31, 23, 52, 0.95) 0%,
+    rgba(26, 18, 44, 0.9) 100%
+  );
+  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 8px 20px rgba(124, 58, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+}
+
+/* Subtle texture overlay */
+.duel-header-fixed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(167, 139, 250, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.duel-header-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 20px;
+  position: relative;
+  z-index: 1;
+  row-gap: 8px;
+}
+
+.duel-header-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 36px;
+  row-gap: 8px;
+}
+
+/* ── Score Display with 3D effect ── */
+.duel-score-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: var(--ink-700);
+  font-weight: 500;
+}
+
+.duel-score-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #A78BFA;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-manrope, "Manrope"), sans-serif;
+
+  /* 3D text effect with subtle glow */
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(167, 139, 250, 0.3);
+
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   FINAL MOBILE OVERRIDES — keep these after duel redesign block
+   so cascade can't re-expand desktop styles on phones.
+   ============================================================ */
+@media (max-width: 768px) {
+  .duel-header-content {
+    padding: 0.5rem max(0.75rem, env(safe-area-inset-left, 0px)) 0.5rem max(0.75rem, env(safe-area-inset-right, 0px));
+    gap: 0.5rem;
+    row-gap: 0.4rem;
+    align-items: center;
+  }
+
+  .duel-header-left {
+    gap: 0.75rem;
+    row-gap: 0.35rem;
+  }
+
+  .duel-score-display {
+    font-size: 0.66rem;
+    gap: 0.42rem;
+    letter-spacing: 0.04em;
+  }
+
+  .duel-score-value {
+    font-size: clamp(1rem, 5.4vw, 1.25rem);
+  }
+
+  .duel-area-container {
+    /* Larger duel scene; MCQ panel still flex-fills via .duel-question-* chain */
+    flex: 0 1 42dvh;
+    min-height: clamp(140px, 34dvh, 280px);
+    max-height: min(50dvh, 440px);
+  }
+
+  .duel-area-hud {
+    padding: 6px max(8px, env(safe-area-inset-left, 0px)) 8px max(8px, env(safe-area-inset-right, 0px));
+  }
+
+  .duel-hud-row {
+    /* Keep mobile HUD in a single row: player | timer | boss */
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .duel-hud-timer {
+    font-size: clamp(1.3rem, 7vw, 1.85rem);
+    line-height: 1;
+    order: 0;
+    width: auto;
+    flex: 0 0 auto;
+    /* Vertically center the digit between the two fighter stacks without shifting portrait baselines. */
+    align-self: center;
+  }
+
+  .duel-hud-fighter {
+    gap: 8px;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .duel-hud-name {
+    font-size: 10px;
+  }
+
+  /* Match @media (max-width: 767px): HP ~2× heat/shield (same as min-width 768 desktop pair) */
+  .duel-hud-hp-bar {
+    height: clamp(14px, 2.5vw + 7px, 18px);
+    width: 100%;
+    max-width: none;
+  }
+
+  .duel-hud-heat-bar,
+  .duel-hud-shield-bar {
+    height: clamp(5px, 1.1vw + 2.5px, 7px);
+    max-height: 7px;
+    margin-top: 4px;
+  }
+
+  /* One line keeps chip heights identical so left/right rails stay level; cap width for long copy. */
+  .duel-arena-scene .arena-float--player-floater,
+  .duel-arena-scene .arena-float--boss-floater {
+    max-width: min(46vw, 10.5rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .duel-arena-scene .arena-float {
+    font-size: 0.66rem;
+    padding: 4px 7px;
+  }
+
+  /* Running duel: no scroll region — clip; flex column + min-height:0 propagates to children */
+  .reading-page main.reading-main--arena {
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .duel-question-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: auto;
+    overscroll-behavior-y: none;
+    background-attachment: scroll;
+    /* Extra separation from arena (base .duel-question-area already adds top padding) */
+    padding-top: max(20px, clamp(16px, 3dvh, 36px));
+    padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .duel-question-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .duel-question-section {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    align-items: stretch;
+    padding: 8px max(8px, env(safe-area-inset-left, 0px))
+      max(12px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+
+  /* Propagate flex height so MCQ/TF grid can consume the lower panel instead of a short strip + void */
+  .duel-question-section .duel-question-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.35rem;
+  }
+
+  /* Tighten stem / card chrome so 2×2 MCQ fits without needing a scroll region */
+  .duel-question-container > div:has(> h2.duel-question-stem) {
+    margin-bottom: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .duel-question-stem {
+    font-size: clamp(0.95rem, 3.2vw + 0.45rem, 1.2rem);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+  }
+
+  .duel-question-prompt {
+    font-size: clamp(0.78rem, 2vw + 0.55rem, 0.9rem);
+    margin-top: 0.35rem;
+  }
+
+  .duel-question-section .duel-question-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.4rem 0.45rem;
+    gap: 6px;
+    display: flex;
+    flex-direction: column;
+    /* Pin the choice grid to the bottom of the card so rows can grow upward */
+    justify-content: flex-end;
+  }
+
+  .duel-effects-row {
+    gap: 0.28rem;
+  }
+
+  .duel-effect-badge {
+    padding: 0.22rem 0.45rem;
+    font-size: 0.65rem;
+  }
+
+  .duel-status-hint {
+    padding: 0.4rem 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .duel-question-section .duel-choices-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    align-self: stretch;
+    gap: 6px;
+    grid-auto-rows: minmax(52px, 1fr);
+    align-content: stretch;
+  }
+
+  .duel-question-section .duel-choices-grid.duel-choices-grid--two {
+    gap: 6px;
+    grid-auto-rows: minmax(56px, 1fr);
+  }
+
+  .duel-question-section .duel-choice-btn {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.78rem;
+    line-height: 1.22;
+    min-height: 48px;
+    height: auto;
+    box-sizing: border-box;
+  }
+}
+
+/* After FINAL max-width 768 — extra-tight handsets; HP stays ~2× secondary bar thickness */
+@media (max-width: 420px) {
+  .duel-hud-hp-bar {
+    height: clamp(13px, 3.6vw + 5px, 16px);
+  }
+
+  .duel-hud-heat-bar,
+  .duel-hud-shield-bar {
+    height: clamp(4px, 0.9vw + 2px, 6px);
+    max-height: 6px;
+    margin-top: 3px;
+  }
+
+  .duel-area-container {
+    flex: 0 1 38dvh;
+    min-height: clamp(128px, 30dvh, 240px);
+    max-height: min(46dvh, 360px);
+  }
+
+  .duel-question-section {
+    padding: 6px max(6px, env(safe-area-inset-left, 0px))
+      max(10px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-right, 0px));
+  }
+
+  /* Same stem scale as ≤768 — do not shrink below mobile baseline */
+  .duel-question-stem {
+    font-size: clamp(0.95rem, 3.2vw + 0.45rem, 1.2rem);
+    line-height: 1.3;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  .duel-question-section .duel-choices-grid {
+    gap: 5px;
+    grid-auto-rows: minmax(48px, 1fr);
+    align-content: stretch;
+  }
+
+  .duel-question-section .duel-choices-grid.duel-choices-grid--two {
+    grid-auto-rows: minmax(52px, 1fr);
+  }
+
+  .duel-question-section .duel-choice-btn {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.78rem;
+    line-height: 1.22;
+    min-height: 48px;
+    height: auto;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .duel-arena-scene {
+    /* Pull fighters inward to keep taunt bubbles on-screen */
+    --duel-avatar-x-player: 34%;
+    --duel-avatar-x-boss: 66%;
+    --duel-fighter-bottom: 20px;
+    --duel-avatar-half: 36px;
+    /* Align with global mobile stack (slightly smaller pills); avoid duplicating the old oversized gap. */
+    --duel-floater-stack-gap: clamp(1.4rem, 3.4dvh, 1.72rem);
+  }
+
+  .arena-fighter {
+    bottom: 20px;
+  }
+
+  .arena-fighter-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+  }
+
+  .duel-arena-scene .arena-float {
+    font-size: 0.62rem;
+    padding: 4px 6px;
+  }
+}
+
+/* ── Booster Button with 3D depth and glow ── */
+.duel-booster-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg,
+    rgba(31, 23, 52, 0.6) 0%,
+    rgba(42, 33, 67, 0.5) 100%
+  );
+  border: 1.5px solid rgba(167, 139, 250, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  position: relative;
+
+  /* 3D shadow depth */
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    0 4px 12px rgba(124, 58, 237, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.duel-booster-btn:not(:disabled):hover {
+  background: linear-gradient(135deg,
+    rgba(42, 33, 67, 0.8) 0%,
+    rgba(52, 43, 77, 0.7) 100%
+  );
+  border-color: rgba(167, 139, 250, 0.45);
+  color: var(--ink-900);
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.3),
+    0 6px 16px rgba(124, 58, 237, 0.15),
+    0 0 12px rgba(124, 58, 237, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.duel-booster-btn:not(:disabled):active {
+  transform: scale(0.96) translateY(1px);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(124, 58, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.duel-booster-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.duel-booster-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #A78BFA;
+}
+
+.duel-booster-count {
+  font-size: 0.75rem;
+  color: var(--ink-500);
+  font-weight: 600;
+  min-width: 14px;
+  text-align: center;
+}
+
+.duel-booster-lock {
+  color: #FCA5A5;
+}
+
+/* ── Fullscreen Button with 3D effect ── */
+.duel-fullscreen-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg,
+    rgba(31, 23, 52, 0.5) 0%,
+    rgba(42, 33, 67, 0.4) 100%
+  );
+  border: 1.5px solid rgba(167, 139, 250, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--ink-400);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+  position: relative;
+
+  /* 3D shadow */
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(124, 58, 237, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.duel-fullscreen-btn:hover {
+  background: linear-gradient(135deg,
+    rgba(42, 33, 67, 0.7) 0%,
+    rgba(52, 43, 77, 0.6) 100%
+  );
+  border-color: rgba(167, 139, 250, 0.35);
+  color: var(--ink-700);
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 6px 14px rgba(124, 58, 237, 0.12),
+    0 0 10px rgba(124, 58, 237, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.duel-fullscreen-btn:active {
+  transform: scale(0.94) translateY(1px);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(124, 58, 237, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }

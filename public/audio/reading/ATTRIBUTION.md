@@ -40,4 +40,4 @@ CC0 reference: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 
 ---
 
-To swap files: replace the MP3 in this folder (keep filenames) or update [`lib/reading-audio.ts`](../../../lib/reading-audio.ts).
+To swap files: replace the MP3 in this folder (keep filenames) or update [`lib/reading/reading-audio.ts`](../../../lib/reading/reading-audio.ts).

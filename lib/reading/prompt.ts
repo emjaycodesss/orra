@@ -1,6 +1,6 @@
-import type { OracleState } from "./oracleState";
-import type { CardOrientation, TarotCard } from "./cards";
-import type { HistoricalContext } from "./historical-context";
+import type { OracleState } from "@/lib/oracleState";
+import type { CardOrientation, TarotCard } from "@/lib/cards";
+import type { HistoricalContext } from "@/lib/reading/historical-context";
 
 interface ReadingContext {
   card: TarotCard;

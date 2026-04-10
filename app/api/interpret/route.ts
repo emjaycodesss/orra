@@ -3,16 +3,16 @@ import {
   INTERPRETATION_UNAVAILABLE,
   excerptProviderError,
   shouldAttemptFallback,
-} from "@/lib/interpret-provider-errors";
+} from "@/lib/reading/interpret-provider-errors";
 import {
   INTERPRET_MAX_BODY_BYTES,
   validateInterpretBody,
   type InterpretChatPayload,
-} from "@/lib/interpret-request-validator";
+} from "@/lib/reading/interpret-request-validator";
 import {
   allowInterpretRateLimit,
   isInterpretOriginAllowed,
-} from "@/lib/interpret-route-guards";
+} from "@/lib/reading/interpret-route-guards";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const GITHUB_MODELS_URL = "https://models.inference.ai.azure.com/chat/completions";
@@ -38,8 +38,57 @@ const GITHUB_TIMEOUT_MS = 15_000;
 const BLUESMINDS_TIMEOUT_MS = 8_000;
 const OPENROUTER_TIMEOUT_MS = 10_000;
 
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+/** Max chars from upstream body included in console.warn after redaction (tighter in prod). */
+const UPSTREAM_WARN_SNIPPET_MAX = IS_PRODUCTION ? 80 : 160;
+
 /** Upstream error snippets only in dev — avoids leaking provider messages in production. */
 const EXPOSE_INTERPRET_DETAILS = process.env.NODE_ENV === "development";
+
+/**
+ * Removes common secret-shaped substrings from log text. Provider error JSON can echo tokens;
+ * env keys are never logged here, but bodies might repeat Authorization-style values.
+ * Covers GitHub classic PAT / OAuth / app token bodies (`ghp_`, `gho_`, …) above a conservative length.
+ */
+function redactSensitiveForLogs(s: string): string {
+  let out = s;
+  out = out.replace(/\bBearer\s+[^\s"'<>]+/gi, "Bearer [redacted]");
+  out = out.replace(/\b(sk-[A-Za-z0-9_-]{8,})\b/g, "sk-[redacted]");
+  out = out.replace(/\b(pk_live_[A-Za-z0-9_]{12,})\b/g, "pk_live_[redacted]");
+  out = out.replace(/\b(rk_live_[A-Za-z0-9_]{12,})\b/g, "rk_live_[redacted]");
+  out = out.replace(/\b(github_pat_[A-Za-z0-9_]{20,})\b/g, "github_pat_[redacted]");
+  out = out.replace(/\b(gh[pousr]_[A-Za-z0-9]{20,})\b/g, "gh_[redacted]");
+  return out;
+}
+
+/** Safe, length-capped excerpt for operational warnings (structured message first when JSON). */
+function snippetForInterpretWarn(rawBody: string): string {
+  const excerpt = excerptProviderError(rawBody, IS_PRODUCTION ? 100 : 220) || rawBody;
+  const redacted = redactSensitiveForLogs(excerpt.trim());
+  const max = UPSTREAM_WARN_SNIPPET_MAX;
+  if (!redacted) return "";
+  return redacted.length > max ? `${redacted.slice(0, max)}…` : redacted;
+}
+
+function warnInterpretUpstreamFailure(
+  providerId: string,
+  status: number,
+  model: string,
+  rawBody: string
+): void {
+  const snippet = snippetForInterpretWarn(rawBody);
+  if (IS_PRODUCTION) {
+    console.warn(
+      `[interpret] ${providerId} upstream error status=${status} model=${model}` +
+        (snippet ? ` snippet=${snippet}` : "")
+    );
+  } else {
+    console.warn(
+      `[interpret] ${providerId} model=${model} status=${status}` +
+        (snippet ? ` body=${snippet}` : "")
+    );
+  }
+}
 
 function openRouterFallbackModels(): string[] {
   const multi = process.env.OPENROUTER_FALLBACK_MODELS?.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
@@ -58,21 +107,9 @@ function withModel(body: InterpretChatPayload, model: string): InterpretChatPayl
   return { ...body, model };
 }
 
-function interpretErrorResponse(status: number, rawBody: string, provider: string) {
-  const details = excerptProviderError(rawBody);
-  if (process.env.NODE_ENV === "development") {
-    console.warn(`[interpret] ${provider} failed`, status, details || rawBody.slice(0, 120));
-  }
-  return NextResponse.json(
-    {
-      error: INTERPRETATION_UNAVAILABLE,
-      ...(EXPOSE_INTERPRET_DETAILS && details ? { details } : {}),
-      provider,
-    },
-    { status }
-  );
-}
-
+/**
+ * Interpretation proxy. On total provider failure returns 502; in development `details` is redacted upstream text.
+ */
 export async function POST(request: Request) {
   if (!isInterpretOriginAllowed(request)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -157,7 +194,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ interpretation: content, provider: "github-models", model });
         }
         const text = await res.text();
-        console.warn(`[interpret] GitHub Models model=${model} status=${res.status} body=${text.slice(0, 300)}`);
+        warnInterpretUpstreamFailure("github-models", res.status, model, text);
         const excerpt = excerptProviderError(text) || text.slice(0, 180);
         failureChain = failureChain ? `${failureChain}; GitHub(${model}): ${excerpt}` : `GitHub(${model}): ${excerpt}`;
         if (!shouldAttemptFallback(res.status, text)) break;
@@ -185,7 +222,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ interpretation: content, provider: "bluesminds", model });
         }
         const text = await res.text();
-        console.warn(`[interpret] Bluesminds model=${model} status=${res.status} body=${text.slice(0, 300)}`);
+        warnInterpretUpstreamFailure("bluesminds", res.status, model, text);
         const excerpt = excerptProviderError(text) || text.slice(0, 180);
         failureChain = failureChain ? `${failureChain}; Bluesminds(${model}): ${excerpt}` : `Bluesminds(${model}): ${excerpt}`;
         if (!shouldAttemptFallback(res.status, text)) break;
@@ -222,6 +259,7 @@ export async function POST(request: Request) {
           const content = data.choices?.[0]?.message?.content ?? "";
           return NextResponse.json({ interpretation: content, provider: "openrouter", model });
         }
+        warnInterpretUpstreamFailure("openrouter", res.status, model, text);
         const excerpt = excerptProviderError(text) || text.slice(0, 180);
         failureChain = failureChain ? `${failureChain}; OR(${model}): ${excerpt}` : `OR(${model}): ${excerpt}`;
       } catch (e) {
@@ -231,14 +269,17 @@ export async function POST(request: Request) {
     }
   }
 
-  if (process.env.NODE_ENV === "development") {
-    console.warn("[interpret] all providers failed:", failureChain);
+  if (process.env.NODE_ENV === "development" && failureChain) {
+    console.warn("[interpret] all providers failed:", redactSensitiveForLogs(failureChain));
   }
+
+  const detailsForClient =
+    EXPOSE_INTERPRET_DETAILS && failureChain ? redactSensitiveForLogs(failureChain) : undefined;
 
   return NextResponse.json(
     {
       error: INTERPRETATION_UNAVAILABLE,
-      ...(EXPOSE_INTERPRET_DETAILS && failureChain ? { details: failureChain } : {}),
+      ...(detailsForClient ? { details: detailsForClient } : {}),
     },
     { status: 502 }
   );

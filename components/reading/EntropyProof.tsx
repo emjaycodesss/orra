@@ -4,6 +4,7 @@ interface Props {
   sequenceNumber: bigint | null;
   requestTxHash: string | null;
   callbackTxHash: string | null;
+  showSequenceNumber?: boolean;
 }
 
 function EntropyProofLinkCta({ href, label }: { href: string; label: string }) {
@@ -38,7 +39,12 @@ function EntropyProofLinkCta({ href, label }: { href: string; label: string }) {
   );
 }
 
-export function EntropyProof({ sequenceNumber, requestTxHash, callbackTxHash }: Props) {
+export function EntropyProof({
+  sequenceNumber,
+  requestTxHash,
+  callbackTxHash,
+  showSequenceNumber = true,
+}: Props) {
   if (sequenceNumber === null) return null;
 
   const rpcUrl =
@@ -57,6 +63,11 @@ export function EntropyProof({ sequenceNumber, requestTxHash, callbackTxHash }: 
         <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-ink-400">
           entropy proof
         </p>
+        {showSequenceNumber && (
+          <p className="-mt-2 text-[20px] font-semibold text-ink-900 leading-none">
+            #{sequenceNumber.toString()}
+          </p>
+        )}
         <p className="text-[11px] sm:text-[12px] text-ink-400 leading-relaxed">
           Verify this reading is cryptographically fair. The card was drawn from verifiable on-chain randomness - not controlled by Orra.
         </p>

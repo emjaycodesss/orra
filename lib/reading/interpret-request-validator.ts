@@ -2,7 +2,7 @@ export const INTERPRET_MAX_BODY_BYTES = 64 * 1024;
 
 const ALLOWED_TOP_LEVEL_KEYS = new Set(["model", "max_tokens", "messages"]);
 
-// Aligns with buildMessages(); caps provider spend.
+/** Upper bound for `max_tokens`; kept in sync with `buildMessages()` spend limits. */
 const MAX_TOKENS_CAP = 384;
 
 const MAX_CONTENT_PER_MESSAGE = 24_000;
@@ -14,7 +14,7 @@ export type InterpretChatPayload = {
   messages: Array<{ role: "system" | "user"; content: string }>;
 };
 
-export type ValidateInterpretBodyResult =
+type ValidateInterpretBodyResult =
   | { ok: true; payload: InterpretChatPayload }
   | { ok: false; error: string; status: number };
 

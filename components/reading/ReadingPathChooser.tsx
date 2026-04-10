@@ -2,33 +2,83 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { X } from "lucide-react";
+import { MdAutoAwesome, MdWhatshot } from "react-icons/md";
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
-import {
-  ReadingOracleIconCards,
-  ReadingRitualOracleCta,
-} from "@/components/reading/ReadingWalletHud";
+import { ReadingRitualOracleCta } from "@/components/reading/ReadingWalletHud";
 
-function PathArenaGlyph() {
-  return (
-    <svg
-      className="oracle-button-svg"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M12 2.25l1.35 4.6 4.85.38-3.7 2.85 1.4 4.75L12 12.35 8.1 14.73l1.4-4.75-3.7-2.85 4.85-.38L12 2.25z"
-        opacity={0.38}
-      />
-      <path d="M12 5.85l.85 2.95 3.1.22-2.38 1.82.9 3.05L12 11.65 9.53 13.89l.9-3.05-2.38-1.82 3.1-.22L12 5.85z" />
-    </svg>
-  );
-}
+/** Distinguishes modal copy by selected portal mode. */
+type PathMode = "trivia" | "reading";
+
+/**
+ * Centralized card data keeps the two portal paths visually aligned.
+ * Trivia uses `/game?entry=portal` so a stale `ended` cookie rotates back into lobby/draw.
+ */
+const PATH_CARDS: ReadonlyArray<{
+  mode: PathMode;
+  title: string;
+  description: string;
+  imageSrc: string;
+  imageAlt: string;
+  buttonLabel: string;
+  buttonAria: string;
+  onSelectPath: (router: ReturnType<typeof useRouter>) => void;
+  howItWorksTitle: string;
+  howItWorksLede: string;
+  howItWorksSteps: string[];
+}> = [
+  {
+    mode: "trivia",
+    title: "Trivia Clash",
+    description: "Draw on-chain arcana boosters, then enter a rapid trivia clash against oracle guardians.",
+    imageSrc: "/trivia_clash.png",
+    imageAlt: "Arcane cards charged with lightning for Trivia Clash mode",
+    buttonLabel: "Ascend\u2009to\u2009Clash",
+    buttonAria: "Open Oracle Trivia Clash — Pyth quiz duel",
+    onSelectPath: (router) => router.push("/game?entry=portal"),
+    howItWorksTitle: "Trivia duel pipeline",
+    howItWorksLede: "Fast, competitive mode with on-chain booster draws powering each run.",
+    howItWorksSteps: [
+      "Start a run and lock in your duel setup against an oracle-themed opponent.",
+      "Draw booster effects and apply them to shift damage, shields, or scoring momentum.",
+      "Answer timed questions across multiple rounds to build your final score.",
+      "Submit the run to the leaderboard and compare performance against other players.",
+    ],
+  },
+  {
+    mode: "reading",
+    title: "Oracle’s Revelation",
+    description: "Reveal one verifiable card through entropy-backed oracle flow and receive your guided revelation.",
+    imageSrc: "/revelation.png",
+    imageAlt: "Mystical energy and cosmic sight motif for Oracle’s Revelation mode",
+    buttonLabel: "Claim\u2009Your\u2009Fate",
+    buttonAria: "Continue to verifiable tarot draw at /reading",
+    onSelectPath: (router) => router.push("/reading"),
+    howItWorksTitle: "Verifiable draw pipeline",
+    howItWorksLede:
+      "One oracle snapshot hash + one entropy callback. Everything below can be independently verified on-chain.",
+    howItWorksSteps: [
+      "You answer realm, stance, timeframe, and truth. These become the structured reading context.",
+      "On draw, Orra submits requestReading(feedId, oracleSnapshotHash); the hash commits the frozen Pyth fields.",
+      "Pyth Entropy fulfills the request in a callback tx and returns a 32-byte random value.",
+      "Card index is deterministic from that random value. Reversal uses bit 8: ((randomNumber >> 8) % 2) == 1 means reversed; otherwise upright.",
+      "CardDrawn emits sequence, oracle hash, card index, and randomness for independent verification.",
+    ],
+  },
+];
 
 export function ReadingPathChooser() {
   const router = useRouter();
+  const [activeHowItWorksMode, setActiveHowItWorksMode] = useState<PathMode | null>(null);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+  const activeCard = PATH_CARDS.find((card) => card.mode === activeHowItWorksMode) ?? PATH_CARDS[1];
+
+  /** Keeps modal state updates in one place for clearer interaction flow. */
+  const openHowItWorks = (mode: PathMode) => {
+    setActiveHowItWorksMode(mode);
+    setIsHowItWorksOpen(true);
+  };
 
   return (
     <div className="reading-approach-hero reading-path-chooser">
@@ -49,52 +99,72 @@ export function ReadingPathChooser() {
       </div>
 
       <div
-        className="grid w-full max-w-xl grid-cols-1 gap-5 sm:max-w-3xl sm:grid-cols-2 sm:gap-6"
+        className="grid w-full max-w-[22rem] grid-cols-1 gap-6 sm:max-w-[46rem] sm:grid-cols-2 sm:gap-5"
         style={{
           animation: "fadeUp 1.7s cubic-bezier(0.16,1,0.3,1) 0.12s forwards",
           opacity: 0,
         }}
       >
-        <div className="card-surface card-surface-static rounded-2xl px-5 py-6 shadow-[0_12px_40px_rgba(9,4,18,0.28)] sm:px-6 sm:py-7">
-          <div className="flex flex-col items-center gap-3 sm:items-stretch">
-            <ReadingRitualOracleCta
-              label="Oracle Trivia Clash"
-              ariaLabel="Open Oracle Trivia Clash — Pyth quiz duel"
-              compact={false}
-              onClick={() => router.push("/game")}
-              glyph={<PathArenaGlyph />}
-              className="reading-nav-oracle-cta--no-pulse w-full max-w-[min(100%,20rem)] sm:max-w-none"
-            />
-            <p className="text-balance text-center text-[12px] leading-relaxed text-[#4f4268] sm:text-left sm:px-0.5">
-              Draw major-arcana boosters on-chain, then duel through oracle-tuned questions.
-            </p>
+        {PATH_CARDS.map((card) => (
+          <div
+            key={card.mode}
+            className="card-surface card-surface-static rounded-2xl px-3.5 py-3.5 shadow-[0_12px_40px_rgba(9,4,18,0.28)] sm:px-5 sm:py-5"
+          >
+            <div className="flex h-full min-h-[20.5rem] flex-col items-center gap-2 text-center sm:min-h-[22.5rem] sm:gap-2.5">
+              <div className="relative h-[8.75rem] w-full overflow-hidden rounded-xl border border-white/45 bg-gradient-to-br from-white/35 via-white/18 to-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_24px_rgba(9,4,18,0.18)] sm:h-[11rem]">
+                <Image
+                  src={card.imageSrc}
+                  alt={card.imageAlt}
+                  fill
+                  sizes="(max-width: 640px) 88vw, 360px"
+                  className="object-cover object-center"
+                  priority={card.mode === "trivia"}
+                />
+              </div>
+
+              <div className="flex flex-col items-center gap-1 pt-0.5 sm:pt-1">
+                <h3 className="text-center text-[1.62rem] font-semibold leading-tight tracking-[0.005em] text-ink-900 sm:text-[20px]">
+                  {card.title}
+                </h3>
+                <p
+                  className="max-w-[30ch] overflow-hidden text-balance text-center text-[11px] leading-relaxed text-[#4f4268] sm:text-[12px]"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {card.description}
+                </p>
+              </div>
+
+              <ReadingRitualOracleCta
+                label={card.buttonLabel}
+                ariaLabel={card.buttonAria}
+                compact
+                onClick={() => card.onSelectPath(router)}
+                glyph={
+                  card.mode === "trivia" ? (
+                    <MdWhatshot className="oracle-button-svg text-[1rem]" aria-hidden />
+                  ) : (
+                    <MdAutoAwesome className="oracle-button-svg text-[1rem]" aria-hidden />
+                  )
+                }
+                className="mt-auto w-full max-w-[12.25rem] sm:max-w-[13.5rem]"
+              />
+              <button
+                type="button"
+                onClick={() => openHowItWorks(card.mode)}
+                className="text-[12px] font-medium text-ink-500 underline underline-offset-4 decoration-ink-300/70 transition-colors hover:text-ink-800 hover:decoration-ink-600"
+                aria-haspopup="dialog"
+                aria-expanded={isHowItWorksOpen && activeHowItWorksMode === card.mode}
+                aria-controls="how-it-works-modal"
+              >
+                How it works
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="card-surface card-surface-static rounded-2xl px-5 py-6 shadow-[0_12px_40px_rgba(9,4,18,0.28)] sm:px-6 sm:py-7">
-          <div className="flex flex-col items-center gap-3 sm:items-stretch">
-            <ReadingRitualOracleCta
-              label="Verifiable draw"
-              ariaLabel="Continue to verifiable tarot draw at /reading"
-              compact={false}
-              onClick={() => router.push("/reading")}
-              glyph={<ReadingOracleIconCards />}
-              className="reading-nav-oracle-cta--no-pulse w-full max-w-[min(100%,20rem)] sm:max-w-none"
-            />
-            <p className="text-balance text-center text-[12px] leading-relaxed text-[#4f4268] sm:text-left sm:px-0.5">
-              Realm, stance, and one card — hash-committed oracle context plus entropy callback.
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsHowItWorksOpen(true)}
-              className="text-[12px] font-medium text-ink-500 underline underline-offset-4 decoration-ink-300/70 transition-colors hover:text-ink-800 hover:decoration-ink-600"
-              aria-haspopup="dialog"
-              aria-expanded={isHowItWorksOpen}
-              aria-controls="how-it-works-modal"
-            >
-              How it works
-            </button>
-          </div>
-        </div>
+        ))}
       </div>
       <div
         className={`fixed inset-0 z-[90] flex items-center justify-center px-4 backdrop-blur-[2px] transition-all duration-200 ease-out ${
@@ -126,11 +196,10 @@ export function ReadingPathChooser() {
                 how it works
               </p>
               <p className="text-[16px] font-medium text-ink-900 leading-snug">
-                Verifiable draw pipeline
+                {activeCard.howItWorksTitle}
               </p>
               <p className="text-[12px] text-ink-500 leading-relaxed">
-                One oracle snapshot hash + one entropy callback. Everything below can be independently verified
-                on-chain.
+                {activeCard.howItWorksLede}
               </p>
             </div>
             <button
@@ -143,36 +212,18 @@ export function ReadingPathChooser() {
             </button>
           </div>
           <ol className="mx-auto flex max-w-xl list-decimal flex-col gap-2 pl-5 text-[12px] text-ink-600 leading-relaxed">
-            <li className="text-left">
-              You answer realm, stance, timeframe, and truth. These become the structured reading context.
-            </li>
-            <li className="text-left">
-              On draw, Orra submits{" "}
-              <span className="font-sans tabular text-[11px] text-ink-700">
-                requestReading(feedId, oracleSnapshotHash)
-              </span>
-              ; the hash commits the frozen Pyth fields.
-            </li>
-            <li className="text-left">
-              Pyth Entropy fulfills the request in a callback tx and returns a 32-byte random value.
-            </li>
-            <li className="text-left">
-              Card index is deterministic from that random value. Reversal uses bit 8:
-              <span className="ml-1 font-sans tabular text-[11px] text-ink-700">
-                ((randomNumber {">>"} 8) % 2) == 1
-              </span>
-              means reversed; otherwise upright.
-            </li>
-            <li className="text-left">
-              <span className="font-sans tabular text-[11px] text-ink-700">CardDrawn</span> emits sequence, oracle
-              hash, card index, and randomness. Interpretation is generated afterward from your answers + drawn
-              result + committed oracle context.
-            </li>
+            {activeCard.howItWorksSteps.map((step) => (
+              <li key={step} className="text-left">
+                {step}
+              </li>
+            ))}
           </ol>
-          <p className="mt-4 text-[11px] leading-relaxed text-ink-500">
-            Audit shortcut: verify request tx, callback tx, oracle snapshot hash, and raw feed inputs in the receipt.
-            Matching values prove the draw path and reversal state.
-          </p>
+          {activeCard.mode === "reading" && (
+            <p className="mt-4 text-[11px] leading-relaxed text-ink-500">
+              Audit shortcut: verify request tx, callback tx, oracle snapshot hash, and raw feed inputs in the
+              receipt. Matching values prove the draw path and reversal state.
+            </p>
+          )}
         </div>
       </div>
     </div>

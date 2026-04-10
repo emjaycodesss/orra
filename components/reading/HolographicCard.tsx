@@ -53,6 +53,7 @@ export function HolographicCard({ cardIndex, orientation }: Props) {
     getReducedMotion,
     () => false
   );
+  const [frontReady, setFrontReady] = useState(false);
   const [flipDone, setFlipDone] = useState(false);
   const [popover, setPopover] = useState<{
     dx: number;
@@ -68,6 +69,7 @@ export function HolographicCard({ cardIndex, orientation }: Props) {
   const inspectActiveRef = useRef(false);
   const firstPopRef = useRef(true);
   const isReversed = orientation === "reversed";
+  const canFlip = reducedMotion || frontReady;
 
   const inspectActive = popover !== null;
 
@@ -305,6 +307,7 @@ export function HolographicCard({ cardIndex, orientation }: Props) {
           <div
             className="reading-holo-flipper"
             onAnimationEnd={handleFlipEnd}
+            style={{ animation: canFlip ? undefined : "none" }}
           >
             <div className="reading-holo-face reading-holo-face--back">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -321,6 +324,10 @@ export function HolographicCard({ cardIndex, orientation }: Props) {
                     alt=""
                     className="reading-holo-img"
                     draggable={false}
+                    loading="eager"
+                    decoding="async"
+                    onLoad={() => setFrontReady(true)}
+                    onError={() => setFrontReady(true)}
                   />
                 </div>
                 <div className="reading-holo-shine" aria-hidden />

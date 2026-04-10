@@ -14,7 +14,7 @@ import {
   SHUFFLE_PHASE_SCALE_DURATION as SCALE_DURATION,
   SHUFFLE_PHASE_SCALE_OFFSET as SCALE_OFFSET,
   SHUFFLE_PHASE_Y_OFFSET as Y_OFFSET,
-} from "@/lib/shuffle-phase-timing";
+} from "@/lib/reading/shuffle-phase-timing";
 
 const BACK_SRC = "/cards/back.webp";
 

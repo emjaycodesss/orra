@@ -3,12 +3,12 @@ export interface OrbitAnimState {
   expanse: boolean;
 }
 
-export interface OrbitPalette {
+interface OrbitPalette {
   bg: [number, number, number];
   star: [number, number, number];
 }
 
-export interface OrbitCanvasPersistence {
+interface OrbitCanvasPersistence {
   /** Stable random seed so star field geometry survives full page reloads. */
   seed?: number;
   /** Shared time origin so rotation phase continues after refresh. */
@@ -79,7 +79,6 @@ export function createOrbitCanvas(
     if (rawSeed == null) return Math.random;
     let t = (rawSeed >>> 0) || 1;
     return () => {
-      // Mulberry32 PRNG: deterministic and tiny, good for reproducible visuals.
       t += 0x6d2b79f5;
       let r = Math.imul(t ^ (t >>> 15), 1 | t);
       r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
@@ -107,7 +106,6 @@ export function createOrbitCanvas(
 
   const stars: Star[] = [];
 
-  // After first seed, resize rescales only (RO from layout must not re-randomize the field).
   let orbitStarsInitialized = false;
 
   function reseedStarsAndFrame() {
@@ -157,7 +155,10 @@ export function createOrbitCanvas(
     g.fillRect(0, 0, cw, ch);
   }
 
-  // Rescale on RO instead of reseeding — avoids visible “restart” when chrome/modals resize.
+  /**
+   * ResizeObserver path: rescale existing stars instead of reseeding so the field does not visibly restart.
+   * If previous dimensions were invalid, resize the canvas to match without rescaling positions.
+   */
   function onContainerResize() {
     const prevCw = cw;
     const prevCh = ch;
@@ -196,7 +197,6 @@ export function createOrbitCanvas(
         g.fillRect(0, 0, cw, ch);
         return;
       }
-      // Rare degenerate prev dims: keep the same star field, just match canvas size.
       cw = newCw;
       ch = newCh;
       centerx = cw / 2;
@@ -231,18 +231,14 @@ export function createOrbitCanvas(
       if (st.y > st.expansePos) st.y -= Math.floor(st.expansePos - st.y) / -140;
     }
 
-    g.save();
     g.fillStyle = st.color;
     g.strokeStyle = st.color;
     g.beginPath();
-    const oldPos = rotate(centerx, centery, st.prevX, st.prevY, -st.prevR);
+    const oldPos = rotate(centerx, centery, st.prevX, st.prevY, st.prevR);
+    const newPos = rotate(centerx, centery, st.x, st.y, st.rotation);
     g.moveTo(oldPos[0], oldPos[1]);
-    g.translate(centerx, centery);
-    g.rotate(st.rotation);
-    g.translate(-centerx, -centery);
-    g.lineTo(st.x, st.y);
+    g.lineTo(newPos[0], newPos[1]);
     g.stroke();
-    g.restore();
 
     st.prevR = st.rotation;
     st.prevX = st.x;

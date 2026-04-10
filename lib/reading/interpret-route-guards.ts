@@ -27,6 +27,9 @@ function buildAllowedOrigins(): Set<string> {
   return set;
 }
 
+/**
+ * Origin gate for `/api/interpret`. Production uses env/Vercel hosts; an empty allow-list fails closed (no open proxy).
+ */
 export function isInterpretOriginAllowed(request: Request): boolean {
   if (process.env.NODE_ENV === "development") return true;
   if (process.env.ORRA_INTERPRET_TRUST_ANY_ORIGIN === "1") return true;
@@ -36,7 +39,6 @@ export function isInterpretOriginAllowed(request: Request): boolean {
 
   const allowed = buildAllowedOrigins();
   if (allowed.size === 0) {
-    // No deployment host configured — fail closed so production isn't an open proxy.
     return false;
   }
 

@@ -4,7 +4,7 @@ import { devWarn } from "@/lib/dev-warn";
 
 type Listener = () => void;
 
-export type ConnectionStatus = 'connecting' | 'open' | 'error';
+type ConnectionStatus = 'connecting' | 'open' | 'error';
 
 const RETRY_BASE_MS = 500;
 const RETRY_MAX_MS = 5_000;
@@ -17,10 +17,13 @@ class PythStreamStore {
   private currentFeedId: number | null = null;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryCount = 0;
+  /** When true, tab was hidden — ES is torn down to free HTTP/1.1 slots for other tabs/routes. */
+  private pausedByVisibility = false;
 
   subscribe = (listener: Listener) => {
+    installPythStreamVisibilityBridge();
     this.listeners.add(listener);
-    if (this.currentFeedId !== null && !this.eventSource) {
+    if (this.currentFeedId !== null && !this.eventSource && !this.pausedByVisibility) {
       this.connect(this.currentFeedId);
     }
     return () => {
@@ -60,9 +63,26 @@ class PythStreamStore {
     if (this.listeners.size > 0) this.connect(feedId);
   }
 
+  /** Releases the long-lived SSE socket while the document is hidden (same-origin connection cap). */
+  pauseForDocumentHidden() {
+    this.pausedByVisibility = true;
+    this.disconnect();
+    this.connectionStatus = "connecting";
+    this.notify();
+  }
+
+  resumeIfNeeded() {
+    if (!this.pausedByVisibility) return;
+    this.pausedByVisibility = false;
+    if (this.listeners.size > 0 && this.currentFeedId != null && this.currentFeedId > 0) {
+      this.connect(this.currentFeedId);
+    }
+  }
+
   private connect(feedId: number) {
     if (feedId <= 0) return;
     if (typeof window === "undefined") return;
+    if (this.pausedByVisibility) return;
     this.disconnect();
     this.currentFeedId = feedId;
 
@@ -117,6 +137,16 @@ class PythStreamStore {
 }
 
 const store = new PythStreamStore();
+
+let pythVisibilityBridgeInstalled = false;
+function installPythStreamVisibilityBridge() {
+  if (pythVisibilityBridgeInstalled || typeof document === "undefined") return;
+  pythVisibilityBridgeInstalled = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) store.pauseForDocumentHidden();
+    else store.resumeIfNeeded();
+  });
+}
 
 export function usePythStream(feedId: number) {
   const feedIdRef = useRef(feedId);

@@ -2,9 +2,9 @@
 
 import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { useReactiveLayoutEffect } from "@/hooks/useReactiveLayoutEffect";
-import { createOrbitCanvas, type OrbitAnimState } from "@/lib/orbit-canvas";
+import { createOrbitCanvas, type OrbitAnimState } from "@/lib/reading/orbit-canvas";
 
-// Module-level flags so Strict Mode / remount doesn’t reset post-portal orbit physics.
+/** Module-level anim state survives Strict Mode remounts so post-portal orbit physics are not reset. */
 const readingOrbitAnim: OrbitAnimState = { collapse: false, expanse: false };
 const ORBIT_STATE_STORAGE_KEY = "orra.readingOrbit.state.v1";
 const ORBIT_SEED_STORAGE_KEY = "orra.readingOrbit.seed.v1";
@@ -27,6 +27,10 @@ interface ReadingOrbitLayerProps {
   onEnterClick?: () => void;
 }
 
+/**
+ * Persistent reading starfield: canvas effect depends only on `reducedMotion` (one canvas per mount).
+ * When the ENTER overlay reappears, pre-portal physics reset; other layout churn does not (hover stays stable).
+ */
 export function ReadingOrbitLayer({
   showEnterOverlay,
   onPortalEntered,
@@ -36,7 +40,6 @@ export function ReadingOrbitLayer({
   const hostRef = useRef<HTMLDivElement | null>(null);
   const orbitSeedRef = useRef<number>(Math.floor(Math.random() * 0xffffffff));
   const orbitStartMsRef = useRef<number>(Date.now());
-  // Reset physics only when intro (re)activates, not on unrelated layout (preserves ENTER hover).
   const wasIntroPortalRef = useRef(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
 
@@ -56,9 +59,7 @@ export function ReadingOrbitLayer({
           expanse: readingOrbitAnim.expanse,
         }),
       );
-    } catch {
-      // Best-effort persistence: ignore storage failures silently.
-    }
+    } catch {}
   }, []);
 
   useReactiveLayoutEffect(() => {
@@ -84,12 +85,9 @@ export function ReadingOrbitLayer({
       } else {
         window.localStorage.setItem(ORBIT_START_STORAGE_KEY, String(orbitStartMsRef.current));
       }
-    } catch {
-      // Ignore storage parse/access errors and fall back to ephemeral values.
-    }
+    } catch {}
   }, []);
 
-  // One canvas per mount — don’t recreate on phase/prop churn.
   useReactiveLayoutEffect(() => {
     if (reducedMotion) return;
     const node = hostRef.current;
@@ -110,7 +108,6 @@ export function ReadingOrbitLayer({
     };
   }, [reducedMotion]);
 
-  // Re-arm pre-portal physics only when ENTER appears again, not while it stays open.
   useReactiveLayoutEffect(() => {
     if (reducedMotion) return;
     const introPortal = showEnterOverlay && !overlayDismissed;
@@ -144,7 +141,7 @@ export function ReadingOrbitLayer({
       () => onPortalEntered(),
       reducedMotion ? 0 : 850,
     );
-  }, [onEnterClick, onPortalEntered, reducedMotion]);
+  }, [onEnterClick, onPortalEntered, reducedMotion, persistOrbitAnimState]);
 
   return (
     <div

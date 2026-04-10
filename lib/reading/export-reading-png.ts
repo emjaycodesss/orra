@@ -1,6 +1,6 @@
 import { MAJOR_ARCANA, type CardOrientation } from "@/lib/cards";
 
-export function compactFeedSymbolForExport(symbol: string | undefined): string {
+function compactFeedSymbolForExport(symbol: string | undefined): string {
   if (!symbol?.trim()) return "";
   return symbol
     .replace(/^Crypto\./i, "")
@@ -10,12 +10,12 @@ export function compactFeedSymbolForExport(symbol: string | undefined): string {
     .trim();
 }
 
-export function formatWalletForExport(addr: string | undefined): string {
+function formatWalletForExport(addr: string | undefined): string {
   if (!addr || addr.length < 12) return "—";
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
-export type DownloadReadingPngParams = {
+type DownloadReadingPngParams = {
   cardIndex: number;
   cardOrientation: CardOrientation;
   drawnDateStr: string;
@@ -203,7 +203,10 @@ export async function downloadReadingAsPng(params: DownloadReadingPngParams): Pr
       ? `#${sequenceNumberForFile}`
       : "—";
 
-  // Typography: alphabetic baseline ties title to cardY; mirror title→first-meta vertical gap before INTERPRETATION; meta rows share baselines (see drawMetaRow).
+  /**
+   * Alphabetic baselines tie the title to `cardY`; spacing before INTERPRETATION mirrors title→first-meta;
+   * meta rows align via `drawMetaRow`.
+   */
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = T.ink900;
   ctx.font = `700 30px ${FONT}`;

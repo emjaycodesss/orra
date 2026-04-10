@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeOracleSnapshotHash } from "./oracle-snapshot-hash";
-import type { PythStreamData } from "./oracleState";
+import type { PythStreamData } from "@/lib/oracleState";
 
 /** Must match `testOracleSnapshotHashMatchesTsReference` in contracts/test/Orra.t.sol */
 const REF_HEX =

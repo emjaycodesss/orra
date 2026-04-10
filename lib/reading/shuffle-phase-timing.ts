@@ -6,7 +6,7 @@ export const SHUFFLE_PHASE_SCALE_DURATION = SHUFFLE_PHASE_DURATION / 3;
 
 const STAGGER = SHUFFLE_PHASE_DURATION * 0.03;
 
-export function getShuffleDeckForwardSec(): number {
+function getShuffleDeckForwardSec(): number {
   const D = SHUFFLE_PHASE_DURATION;
   const n = SHUFFLE_PHASE_CARD_COUNT;
   const shuffleCardsEnd = (n - 1) * STAGGER + D;

@@ -9,7 +9,7 @@ export interface HistoricalContext {
   totalDays: number;
 }
 
-export function timeframeToDays(tf: string): number {
+function timeframeToDays(tf: string): number {
   const lower = tf.toLowerCase();
   if (lower.includes("hour")) return 1;
   if (lower.includes("day"))  return 3;

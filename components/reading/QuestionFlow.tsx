@@ -10,7 +10,7 @@ import {
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
 import { inferAssetClass, type AssetClass } from "@/lib/asset-class";
 import { getMarketStatus } from "@/lib/market-hours";
-import { oracleWhisperStore, type WhisperData } from "@/lib/oracle-whispers";
+import { oracleWhisperStore, type WhisperData } from "@/lib/reading/oracle-whispers";
 import type { MarketSession } from "@/lib/oracleState";
 
 export interface OracleAnswers {

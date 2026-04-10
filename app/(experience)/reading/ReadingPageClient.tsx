@@ -3,8 +3,8 @@
 import dynamic from "next/dynamic";
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAccount } from "wagmi";
-import { loadPastReadingsForAddress } from "@/lib/reading-history-store";
+import { useAccount, useChainId } from "wagmi";
+import { loadPastReadingsForAddress } from "@/lib/reading/reading-history-store";
 import { BrowserProvider, formatEther, type Eip1193Provider } from "ethers";
 
 import { History } from "lucide-react";
@@ -48,17 +48,18 @@ import {
   computeOracleState,
   type PythStreamData,
 } from "@/lib/oracleState";
-import { computeOracleSnapshotHash } from "@/lib/oracle-snapshot-hash";
+import { computeOracleSnapshotHash } from "@/lib/reading/oracle-snapshot-hash";
 import { MAJOR_ARCANA, type CardOrientation } from "@/lib/cards";
-import { buildMessages } from "@/lib/prompt";
+import { buildMessages } from "@/lib/reading/prompt";
 import { inferAssetClass } from "@/lib/asset-class";
-import { fetchHistoricalContext } from "@/lib/historical-context";
+import { fetchHistoricalContext } from "@/lib/reading/historical-context";
 import {
   formatPriceForOrraRecord,
   readOrraReadingRecord,
   saveOrraReadingRecord,
-} from "@/lib/orra-reading-storage";
-import { downloadReadingAsPng } from "@/lib/export-reading-png";
+} from "@/lib/reading/orra-reading-storage";
+import { pushOrraReadingToServer } from "@/lib/reading/orra-reading-sync";
+import { downloadReadingAsPng } from "@/lib/reading/export-reading-png";
 import { devWarn } from "@/lib/dev-warn";
 import { useRegisterReadingOrbitBindings } from "@/components/reading/ReadingOrbitShell";
 
@@ -73,6 +74,11 @@ type ReadingPhase =
 
 type ReadingSurfaceTab = "reading" | "history";
 
+/**
+ * Full reading ritual flow. Orbit shell matches `/portal` (shared canvas, no ENTER overlay).
+ * Spread phase renders outside `reading-surface-transition` — its `will-change` would otherwise make Chromium
+ * treat `fixed` as relative to the small surface box instead of the viewport.
+ */
 export default function ReadingPageClient() {
   const router = useRouter();
   const [phase, setPhase] = useState<ReadingPhase>("questions");
@@ -82,6 +88,7 @@ export default function ReadingPageClient() {
   const revealOnceRef = useRef(false);
   const [pythAtCommit, setPythAtCommit] = useState<PythStreamData | null>(null);
   const { isConnected, address } = useAccount();
+  const chainId = useChainId();
   const [surfaceTab, setSurfaceTab] = useState<ReadingSurfaceTab>("reading");
   const [surfaceTransitionPhase, setSurfaceTransitionPhase] = useState<"idle" | "out" | "in">(
     "idle",
@@ -91,7 +98,6 @@ export default function ReadingPageClient() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const contract = useOrraContract();
 
-  // Same orbit shell as `/portal` — keep canvas state; no ENTER overlay on this route.
   const onOrbitPortalNoop = useCallback(() => {}, []);
   useRegisterReadingOrbitBindings({
     showEnterOverlay: false,
@@ -186,6 +192,9 @@ export default function ReadingPageClient() {
           callbackTxHash: contract.callbackTxHash,
           realm: answers.realm,
           realmSymbol: answers.realmSymbol,
+          stance: answers.stance,
+          timeframe: answers.timeframe,
+          truth: answers.truth,
           rawSnapshot: {
             feedId: contract.feedId,
             price: pythAtCommit.price,
@@ -357,8 +366,42 @@ export default function ReadingPageClient() {
         oracleSnapshotHash: contract.oracleSnapshotHash,
         requestTxHash: contract.requestTxHash ?? "",
       });
+      if (
+        address &&
+        contract.feedId !== null &&
+        contract.randomNumber &&
+        contract.callbackTxHash
+      ) {
+        const resolvedChainId =
+          typeof chainId === "number" && Number.isFinite(chainId) ? chainId : 84532;
+        pushOrraReadingToServer({
+          walletAddress: address,
+          chainId: resolvedChainId,
+          sequenceNumber: seq.toString(),
+          cardIndex: contract.cardIndex,
+          isReversed: contract.isReversed === true,
+          feedId: contract.feedId,
+          oracleSnapshotHash: contract.oracleSnapshotHash,
+          randomNumber: contract.randomNumber,
+          callbackTxHash: contract.callbackTxHash,
+          requestTxHash: contract.requestTxHash ?? undefined,
+          realm: answers.realm,
+          stance: answers.stance,
+          timeframe: answers.timeframe,
+          truth: answers.truth,
+          interpretation: fullText,
+          rawSnapshot: {
+            asset: answers.realm,
+            assetSymbol: answers.realmSymbol,
+            price: priceStr,
+            timestamp: Date.now(),
+          },
+        });
+      }
     },
     [
+      address,
+      chainId,
       answers,
       contract.cardIndex,
       contract.sequenceNumber,
@@ -366,6 +409,8 @@ export default function ReadingPageClient() {
       contract.oracleSnapshotHash,
       contract.callbackTxHash,
       contract.requestTxHash,
+      contract.feedId,
+      contract.randomNumber,
       pythAtCommit,
     ]
   );
@@ -401,8 +446,24 @@ export default function ReadingPageClient() {
     [address, surfaceTab, surfaceTransitionPhase, waitMs]
   );
 
+  const isSpreadPhaseActive =
+    phase === "waiting" &&
+    contract.status !== "error" &&
+    contract.status !== "timeout" &&
+    contract.status !== "requesting";
+
   return (
     <>
+      {isSpreadPhaseActive && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center">
+          <SpreadPhase
+            cardIndex={contract.cardIndex}
+            onComplete={() => {
+              void handleReveal();
+            }}
+          />
+        </div>
+      )}
       <header
         className="reading-fixed-util-header fixed left-4 right-4 top-0 z-[70] flex items-center justify-between gap-2 md:left-8 md:right-8"
         aria-label="Reading utilities"
@@ -417,7 +478,7 @@ export default function ReadingPageClient() {
               revealLabelOnHover
               className="reading-nav-oracle-cta--no-pulse reading-nav-oracle-cta--portal-back"
               glyph={<OracleBackGlyph />}
-              onClick={() => router.push("/portal")}
+              onClick={() => router.push("/portal?view=paths")}
             />
           )}
           {surfaceTab === "history" && (
@@ -589,14 +650,8 @@ export default function ReadingPageClient() {
                 />
               </div>
             ) : (
-              <div className="fixed inset-0 z-30 flex items-center justify-center">
-                <SpreadPhase
-                  cardIndex={contract.cardIndex}
-                  onComplete={() => {
-                    void handleReveal();
-                  }}
-                />
-              </div>
+              /* Spread phase is rendered at fragment root level (outside will-change container) */
+              null
             ))}
 
           {phase === "revealed" && contract.cardIndex !== null && (
@@ -707,6 +762,7 @@ export default function ReadingPageClient() {
                   sequenceNumber={contract.sequenceNumber}
                   requestTxHash={contract.requestTxHash}
                   callbackTxHash={contract.callbackTxHash}
+                  showSequenceNumber={false}
                 />
               </div>
             </div>
