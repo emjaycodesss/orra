@@ -4,14 +4,9 @@ import WebSocket from "ws";
 import { NextResponse } from "next/server";
 import { PYTH_HISTORY_HISTORICAL_PRICE_URL } from "@/lib/pyth-history-api";
 import { devWarn } from "@/lib/dev-warn";
+import { pickWsUrl } from "@/lib/pyth-ws";
 
 const BENCHMARKS_URL = "https://benchmarks.pyth.network/v1/shims/tradingview/history";
-
-const PYTH_WS_URLS = [
-  "wss://pyth-lazer-0.dourolabs.app/v1/stream",
-  "wss://pyth-lazer-1.dourolabs.app/v1/stream",
-  "wss://pyth-lazer-2.dourolabs.app/v1/stream",
-];
 
 const PROPERTIES = [
   "price",
@@ -100,7 +95,7 @@ async function hasLiveStream(feedId: number, timeoutMs: number = 5000): Promise<
   if (!token) return false;
 
   return new Promise<boolean>((resolve) => {
-    const wsUrl = PYTH_WS_URLS[Math.floor(Math.random() * PYTH_WS_URLS.length)];
+    const wsUrl = pickWsUrl();
     let ws: WebSocket | null = new WebSocket(wsUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
