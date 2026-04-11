@@ -7,7 +7,8 @@ import { ReadingOrbitShellProvider } from "@/components/reading/ReadingOrbitShel
  * continues when the user picks a path after ENTER (no tear-down on client navigation).
  *
  * `ExperienceImagePreload` is a server fragment: static imgs only (no `useEffect`) so path tiles,
- * boss portraits, arena CSS backgrounds, and major-arcana art decode ahead of first in-view paint.
+ * boss portraits, arena CSS backgrounds, and major-arcana art fetch early. Portal tiles use the same
+ * `/public` URLs as `next/image` (`unoptimized`) plus `ReadingPathChooser` decode gating to avoid pop-in.
  */
 export default function ExperienceLayout({ children }: { children: ReactNode }) {
   return (

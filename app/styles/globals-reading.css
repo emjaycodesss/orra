@@ -864,6 +864,12 @@
   transform-style: preserve-3d;
 }
 
+/* Rings-only variant while `/portal` path tiles decode (no center mark — logo sits in the shell above). */
+.reading-page .reading-uiverse-loader--portal-paths {
+  transform: scale(0.72);
+  transform-style: preserve-3d;
+}
+
 .reading-page .reading-uiverse-loader__ring {
   position: absolute;
   width: 100%;

@@ -1,4 +1,9 @@
-import { EXPERIENCE_PRELOAD_IMAGE_URLS } from "@/lib/game/experience-image-preload-urls";
+import {
+  EXPERIENCE_PRELOAD_IMAGE_URLS,
+  PORTAL_PATH_TILE_IMAGE_URLS,
+} from "@/lib/game/experience-image-preload-urls";
+
+const PORTAL_TILE_SRC = new Set<string>(PORTAL_PATH_TILE_IMAGE_URLS);
 
 /**
  * Off-screen eager `<img>` nodes: triggers fetch + decode for duel / portal artwork as soon as the
@@ -20,6 +25,7 @@ export function ExperienceImagePreload() {
           height={1}
           loading="eager"
           decoding="async"
+          fetchPriority={PORTAL_TILE_SRC.has(src) ? "high" : undefined}
         />
       ))}
     </div>

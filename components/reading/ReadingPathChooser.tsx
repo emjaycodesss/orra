@@ -7,6 +7,8 @@ import { X } from "lucide-react";
 import { MdAutoAwesome, MdWhatshot } from "react-icons/md";
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
 import { ReadingRitualOracleCta } from "@/components/reading/ReadingWalletHud";
+import { useDecodedImagesReady } from "@/hooks/useDecodedImagesReady";
+import { PORTAL_PATH_TILE_IMAGE_URLS } from "@/lib/game/experience-image-preload-urls";
 
 /** Distinguishes modal copy by selected portal mode. */
 type PathMode = "trivia" | "reading";
@@ -73,6 +75,8 @@ export function ReadingPathChooser() {
   const [activeHowItWorksMode, setActiveHowItWorksMode] = useState<PathMode | null>(null);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const activeCard = PATH_CARDS.find((card) => card.mode === activeHowItWorksMode) ?? PATH_CARDS[1];
+  /** Aligns with raw `/public` URLs from `ExperienceImagePreload` + `unoptimized` tiles — no `/_next/image` mismatch. */
+  const pathTileArtReady = useDecodedImagesReady(PORTAL_PATH_TILE_IMAGE_URLS);
 
   /** Keeps modal state updates in one place for clearer interaction flow. */
   const openHowItWorks = (mode: PathMode) => {
@@ -86,6 +90,24 @@ export function ReadingPathChooser() {
         <ReadingApproachLogoLoader />
       </div>
 
+      <p className="sr-only" aria-live="polite">
+        {pathTileArtReady ? "Path choices ready." : "Loading path artwork."}
+      </p>
+
+      {!pathTileArtReady ? (
+        <div
+          className="flex min-h-[16rem] w-full max-w-md flex-col items-center justify-center gap-4 sm:min-h-[18rem]"
+          aria-busy="true"
+        >
+          <div className="reading-uiverse-loader reading-uiverse-loader--portal-paths" aria-hidden>
+            <div className="reading-uiverse-loader__ring reading-uiverse-loader__ring-1" />
+            <div className="reading-uiverse-loader__ring reading-uiverse-loader__ring-2" />
+            <div className="reading-uiverse-loader__ring reading-uiverse-loader__ring-3" />
+          </div>
+          <p className="text-center font-sans text-sm font-medium text-ink-500">Preparing paths…</p>
+        </div>
+      ) : (
+        <>
       <div
         className="flex w-full max-w-xl flex-col items-center gap-2 text-center sm:max-w-2xl"
         style={{
@@ -118,7 +140,8 @@ export function ReadingPathChooser() {
                   fill
                   sizes="(max-width: 640px) 88vw, 360px"
                   className="object-cover object-center"
-                  priority={card.mode === "trivia"}
+                  priority
+                  unoptimized
                 />
               </div>
 
@@ -166,6 +189,8 @@ export function ReadingPathChooser() {
           </div>
         ))}
       </div>
+        </>
+      )}
       <div
         className={`fixed inset-0 z-[90] flex items-center justify-center px-4 backdrop-blur-[2px] transition-all duration-200 ease-out ${
           isHowItWorksOpen
