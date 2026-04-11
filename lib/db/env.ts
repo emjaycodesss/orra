@@ -6,7 +6,10 @@ export function getDatabaseUrl(): string | null {
   return u.length > 0 ? u : null;
 }
 
-/** True when Postgres should back game sessions + leaderboard (server-side only). */
+/**
+ * True when `pg` backs game sessions, runs, and leaderboard (server-side only).
+ * Deployed Orra should set `ORRA_DATABASE_URL` / `DATABASE_URL` (e.g. Supabase pooler); when false, game routes use `.data/orra-game/` JSON (local dev only).
+ */
 export function isGameDatabaseEnabled(): boolean {
   return getDatabaseUrl() !== null;
 }

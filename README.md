@@ -7,7 +7,7 @@ Orra is a web app that pairs live Pyth oracle data with on-chain tarot and trivi
 - **Node.js** 18.18 or newer (recommended: **20.x** LTS for Vercel and CI)
 - **npm** (or another client that respects `package-lock.json`)
 - **Foundry** (`forge`, `cast`) for the Solidity project under `contracts/`
-- **Postgres** (optional) for durable game sessions and leaderboards in production — same connection string you would use against a Supabase project’s database if you host there; without it, the app uses a local file store under `.data/orra-game/`
+- **Supabase Postgres** — Production game persistence (sessions, runs, leaderboards, user profiles) goes through **`pg`** against the same database as your Supabase project: set **`ORRA_DATABASE_URL`** (or **`DATABASE_URL`**) to the Supabase **connection string** (pooler URI on port **6543** is typical for serverless). Apply `migrations/*.sql` in order and verify RLS with `scripts/game-policy-check.sql`. If neither URL is set (common for quick local runs), game APIs fall back to **`.data/orra-game/*.json`** only on that machine — not for multi-instance or production hosting.
 
 ## What it does
 
@@ -22,7 +22,7 @@ Orra is a web app that pairs live Pyth oracle data with on-chain tarot and trivi
 3. Entropy returns a `bytes32`. The contract maps it to one of 22 Major Arcana indices and emits events. Anyone can correlate the draw with the committed oracle state off-chain.
 4. Optional text interpretation runs server-side. The API sends oracle context and reading metadata to a configured LLM provider. No provider keys means interpretation stays disabled; the draw still works on-chain.
 
-**Game** (`/game`) — Oracle Trivia Clash — uses `NEXT_PUBLIC_ORRA_TRIVIA_CONTRACT_ADDRESS` and the same Entropy deployment pattern: boosters and duel randomness are requested on-chain (not simulated in the UI). Game APIs under `app/api/game/*` persist state to Postgres when `ORRA_DATABASE_URL` or `DATABASE_URL` is set; otherwise they use the local JSON file store for development.
+**Game** (`/game`) — Oracle Trivia Clash — uses `NEXT_PUBLIC_ORRA_TRIVIA_CONTRACT_ADDRESS` and the same Entropy deployment pattern: boosters and duel randomness are requested on-chain (not simulated in the UI). Game APIs under `app/api/game/*` persist to **Supabase Postgres** in production via `ORRA_DATABASE_URL` / `DATABASE_URL` (`lib/db/`, row-level security in migrations). Without a database URL, the same routes use the **local JSON file store** under `.data/orra-game/` for development only.
 
 Randomness for readings and trivia comes from Pyth Entropy, not from the UI. Oracle snapshots tie the reading narrative to a specific Pyth update for the chosen feed.
 
@@ -34,7 +34,7 @@ Randomness for readings and trivia comes from Pyth Entropy, not from the UI. Ora
 
 - **App:** Next.js 15, React, TypeScript, Tailwind, wagmi, RainbowKit, viem, ethers
 - **Data:** Pyth (HTTP/stream routes under `app/api/pyth-*`; `PYTH_PRO_TOKEN` unlocks Pro features where used)
-- **Persistence:** Optional Postgres via `pg` (`lib/db/`, `migrations/*.sql`); local JSON fallback under `.data/orra-game/` when no DB URL is set
+- **Persistence:** **Supabase Postgres** via `pg` (`lib/db/`, `migrations/*.sql`, RLS-aware helpers); local JSON under `.data/orra-game/` only when no `ORRA_DATABASE_URL` / `DATABASE_URL` (local dev convenience)
 - **Chain:** Base Sepolia (default) or Base mainnet, driven by `NEXT_PUBLIC_BASE_RPC_URL`
 - **Contracts:** Solidity 0.8.24, Forge, `@pythnetwork/entropy-sdk-solidity` — `Orra` (readings) and `OrraTrivia` (game)
 
@@ -86,8 +86,8 @@ Open `http://localhost:3000`.
 | Variable | Role |
 |----------|------|
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only; bypasses RLS — use only in trusted API routes (never `NEXT_PUBLIC_`) |
-| `ORRA_DATABASE_URL` | Preferred Postgres URL for game persistence; if unset with no `DATABASE_URL`, game uses `.data/orra-game/*.json` |
-| `DATABASE_URL` | Accepted alias for Postgres (e.g. Vercel/Neon); `ORRA_DATABASE_URL` wins if both are set |
+| `ORRA_DATABASE_URL` | **Production:** Supabase (or any Postgres) URI for game persistence — sessions, runs, leaderboard, profiles. Prefer Supabase **pooler** for serverless. If unset and no `DATABASE_URL`, game uses `.data/orra-game/*.json` (dev-only) |
+| `DATABASE_URL` | Alias for the same Postgres pool (e.g. Vercel env); `ORRA_DATABASE_URL` wins if both are set |
 | `ORRA_PG_POOL_MAX` | Optional; max connections for the server `pg` pool (default 10) |
 | `PYTH_PRO_TOKEN` | Pyth Pro access for ticker/stream routes that need it |
 | `ORRA_API_TIMING_LOG` | Set to `1` to emit structured timing lines for Pyth history routes in logs |
@@ -108,7 +108,7 @@ Template (placeholders only): [`.env.example`](.env.example).
 1. Import the Git repository and use the default **Next.js** framework settings (`npm run build` / output `.next`).
 2. In **Project → Settings → Environment Variables**, add every variable from `.env.example` for **Production** (and **Preview** if previews should run the full stack):
    - All `NEXT_PUBLIC_*` values: `NEXT_PUBLIC_ORRA_CONTRACT_ADDRESS`, `NEXT_PUBLIC_ORRA_TRIVIA_CONTRACT_ADDRESS`, RPC URL, entropy address, optional deploy block, and any Supabase URL/anon key you use in the browser.
-   - Server-only secrets — mark **Sensitive** in the Vercel UI: `PYTH_PRO_TOKEN`, `GITHUB_MODELS_TOKEN`, `BLUESMINDS_API_KEY`, `OPENROUTER_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ORRA_DATABASE_URL` or `DATABASE_URL`, `ORRA_PG_POOL_MAX`, plus any optional Bluesminds / OpenRouter overrides.
+   - Server-only secrets — mark **Sensitive** in the Vercel UI: **`ORRA_DATABASE_URL` or `DATABASE_URL`** (Supabase Postgres — required for durable game data on Vercel), `SUPABASE_SERVICE_ROLE_KEY`, `PYTH_PRO_TOKEN`, `GITHUB_MODELS_TOKEN`, `BLUESMINDS_API_KEY`, `OPENROUTER_API_KEY`, `ORRA_PG_POOL_MAX`, plus any optional Bluesminds / OpenRouter overrides.
    - Never prefix API keys with `NEXT_PUBLIC_` — that would expose them in the browser bundle.
 3. Custom domain: add `https://yourdomain.com` to `ORRA_ALLOWED_ORIGINS` if you disable or replace Vercel’s default host checks.
 4. After deploy: in DevTools → **Sources**, search the client JS for `OPENROUTER_API_KEY`, `GITHUB_MODELS_TOKEN`, `BLUESMINDS_API_KEY`, or `PYTH_PRO_TOKEN`. They must **not** appear as string literals (only `NEXT_PUBLIC_*` may).
@@ -153,7 +153,7 @@ Deploy: configure `contracts/.env` from `env.deploy.example` (`PRIVATE_KEY`, `BA
 - `/api/game/runs` is owner-scoped and requires authenticated session wallet identity to match the requested wallet.
 - `/api/game/profile-by-wallet` is intentionally public summary-only (handle/display/avatar), while detailed run history is owner-only.
 - Rate limiting defaults to an in-memory limiter for local/dev. For production multi-instance deployments, configure a durable strategy via `configureGameRateLimiter` in `lib/game/api-route-helpers.ts`.
-- Apply SQL in `migrations/` in order when enabling Postgres; verify RLS with `scripts/game-policy-check.sql`.
+- Apply SQL in `migrations/` in order on your Supabase (or Postgres) database; verify RLS with `scripts/game-policy-check.sql`.
 - Dev-only env: `ORRA_TRIVIA_DEV_MOCK` / `NEXT_PUBLIC_ORRA_TRIVIA_DEV_MOCK` for local testing without a deployed trivia contract (do not enable in production).
 
 ## CI
