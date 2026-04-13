@@ -108,6 +108,8 @@ export default function GamePageClient() {
   sessionRef.current = session;
 
   const readingAudio = useReadingAudio();
+  /** Duel SFX/BGM buffers must be decoded before Start Clash (skipped when reduced motion disables game audio). */
+  const [gameAudioReady, setGameAudioReady] = useState(false);
 
   const duelAddr = orraTriviaAddress();
 
@@ -129,6 +131,27 @@ export default function GamePageClient() {
     softenForContent: true,
     onPortalEntered: onOrbitPortalNoop,
   });
+
+  useReactiveEffect(() => {
+    if (!readingAudio || session?.phase !== "lobby") {
+      return undefined;
+    }
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setGameAudioReady(true);
+      return undefined;
+    }
+    let cancelled = false;
+    readingAudio.primeGameAudio();
+    void readingAudio.preloadGameAudio().then(() => {
+      if (!cancelled) setGameAudioReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [readingAudio, session?.phase]);
 
   useReactiveEffect(() => {
     if (!duelAddr || !publicClient) {
@@ -493,6 +516,22 @@ export default function GamePageClient() {
     }
   }, [refreshState]);
 
+  const postQuestionClock = useCallback(async (questionId: string) => {
+    try {
+      const r = await fetch("/api/game/question-clock", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId }),
+      });
+      const j = (await r.json()) as { error?: string; session?: PublicSession };
+      if (!r.ok || !j.session) return;
+      const incoming = j.session;
+      setSession((prev) => mergePublicSessionFromServer(prev, incoming));
+    } catch {
+    }
+  }, []);
+
   const postCombo = useCallback(async (payload: { comboDamageHp: number }): Promise<void> => {
     const cur = sessionRef.current;
     if (!cur || cur.phase !== "running") return;
@@ -851,6 +890,7 @@ export default function GamePageClient() {
                   onBoosterSpreadStart={handleBoosterSpreadStart}
                   startBusy={busy || preparingRun}
                   preparingRun={preparingRun}
+                  gameAudioReady={gameAudioReady}
                 />
               </div>
             </>
@@ -877,6 +917,7 @@ export default function GamePageClient() {
                 })}
               onPowerUp={(s) => void postPower(s)}
               onCombo={postCombo}
+              onDeferredQuestionClockStart={(qid) => void postQuestionClock(qid)}
             />
           ) : session?.phase === "ended" ? (
             <GameRecapPage

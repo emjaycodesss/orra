@@ -92,6 +92,8 @@ interface Props {
   onComboKoComplete: (nextSession: ComboPublicSession) => void;
   /** Impact SFX when arena KO starts (e.g. damage hit). */
   onComboKoImpact?: () => void;
+  /** When the first question of a guardian is shown after boss-intro, start the server question clock. */
+  onDeferredQuestionClockStart?: (questionId: string) => void;
 }
 
 /**
@@ -121,6 +123,7 @@ export function GameDuelPanel({
   comboPendingKo,
   onComboKoComplete,
   onComboKoImpact,
+  onDeferredQuestionClockStart,
 }: Props) {
   const q = session.currentQuestion;
   const questionId = q?.id ?? null;
@@ -646,11 +649,15 @@ export function GameDuelPanel({
   ]);
 
   const handleBossIntroComplete = () => {
+    const qid = session.currentQuestion?.id ?? null;
     setDuelPhase("question");
     setRemain(remainFromShownAtMs(session.shownAtMs));
     setLocalSelectedIndex(null);
     setLocalSelectedBool(null);
     revealQuestionRef.current = null;
+    if (qid && session.shownAtMs == null) {
+      onDeferredQuestionClockStart?.(qid);
+    }
   };
 
   const handleAnswerTf = (v: boolean) => {

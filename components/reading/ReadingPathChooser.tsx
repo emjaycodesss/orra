@@ -108,31 +108,19 @@ export function ReadingPathChooser() {
         </div>
       ) : (
         <>
-      <div
-        className="flex w-full max-w-xl flex-col items-center gap-2 text-center sm:max-w-2xl"
-        style={{
-          animation: "fadeUp 1.5s cubic-bezier(0.16,1,0.3,1) forwards",
-          opacity: 0,
-        }}
-      >
+      <div className="reading-path-chooser-prompt flex w-full max-w-xl flex-col items-center gap-2 text-center sm:max-w-2xl">
         <h2 className="reading-approach-lede text-center text-lg font-light leading-snug text-ink-800 sm:text-xl">
           Which path are you going to choose?
         </h2>
       </div>
 
-      <div
-        className="grid w-full max-w-[22rem] grid-cols-1 gap-6 sm:max-w-[46rem] sm:grid-cols-2 sm:gap-5"
-        style={{
-          animation: "fadeUp 1.7s cubic-bezier(0.16,1,0.3,1) 0.12s forwards",
-          opacity: 0,
-        }}
-      >
+      <div className="reading-path-chooser-tiles grid w-full max-w-[22rem] grid-cols-1 gap-6 sm:max-w-[46rem] sm:grid-cols-2 sm:gap-5">
         {PATH_CARDS.map((card) => (
           <div
             key={card.mode}
             className="card-surface card-surface-static rounded-2xl px-3.5 py-3.5 shadow-[0_12px_40px_rgba(9,4,18,0.28)] sm:px-5 sm:py-5"
           >
-            <div className="flex h-full min-h-[20.5rem] flex-col items-center gap-2 text-center sm:min-h-[22.5rem] sm:gap-2.5">
+            <div className="flex h-full min-h-[21.25rem] flex-col items-center gap-2 text-center sm:min-h-[23.25rem] sm:gap-2.5">
               <div className="relative h-[8.75rem] w-full overflow-hidden rounded-xl border border-white/45 bg-gradient-to-br from-white/35 via-white/18 to-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_24px_rgba(9,4,18,0.18)] sm:h-[11rem]">
                 <Image
                   src={card.imageSrc}
@@ -150,10 +138,10 @@ export function ReadingPathChooser() {
                   {card.title}
                 </h3>
                 <p
-                  className="max-w-[30ch] overflow-hidden text-balance text-center text-[11px] leading-relaxed text-[#4f4268] sm:text-[12px]"
+                  className="max-w-[34ch] overflow-hidden text-balance text-center text-[11px] leading-relaxed text-[#4f4268] sm:max-w-[36ch] sm:text-[12px]"
                   style={{
                     display: "-webkit-box",
-                    WebkitLineClamp: 2,
+                    WebkitLineClamp: 3,
                     WebkitBoxOrient: "vertical",
                   }}
                 >

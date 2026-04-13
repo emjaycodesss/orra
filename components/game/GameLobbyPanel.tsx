@@ -63,6 +63,7 @@ export function GameLobbyPanel({
   onBoosterSpreadStart,
   startBusy,
   preparingRun,
+  gameAudioReady = false,
 }: {
   session: PublicSession;
   isConnected: boolean;
@@ -95,6 +96,8 @@ export function GameLobbyPanel({
   startBusy?: boolean;
   /** `/api/game/prepare-run` in flight — Start Clash stays disabled with explanatory copy below. */
   preparingRun?: boolean;
+  /** Duel audio buffers decoded — Start Clash stays disabled until true (see GamePageClient warmup). */
+  gameAudioReady?: boolean;
 }) {
   const duelAddr = orraTriviaAddress();
   const hasLinkedX = Boolean(session.twitterHandle?.replace(/^@+/, "").trim());
@@ -106,7 +109,16 @@ export function GameLobbyPanel({
     session.phase === "lobby" &&
     !boosterPending &&
     !startBusy &&
-    hasLinkedX;
+    hasLinkedX &&
+    gameAudioReady;
+  const audioWarmupPending =
+    Boolean(lastBoosters) &&
+    isConnected &&
+    hasLinkedX &&
+    session.phase === "lobby" &&
+    !boosterPending &&
+    !startBusy &&
+    !gameAudioReady;
   const [phaseIndex, setPhaseIndex] = useState<0 | 1 | 2>(() => {
     if (lastBoosters) return 2;
     if (hasLinkedX) return 1;
@@ -457,6 +469,7 @@ export function GameLobbyPanel({
               entropyCallbackTxHash={entropyCallbackTxHash}
               preparingRun={preparingRunActive}
               runStartPending={Boolean(startBusy && !preparingRunActive)}
+              audioWarmupPending={audioWarmupPending}
             />
           ) : (
             <p className="text-center text-[12px] font-medium text-ink-500">

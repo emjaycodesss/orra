@@ -75,6 +75,8 @@ export class ReadingAudioEngine {
   private preloadPromise: Promise<void> | null = null;
   private readonly rawArrayBuffers = new Map<ReadingAudioBufferKey, ArrayBuffer>();
   private readonly gameRawArrayBuffers = new Map<GameAudioBufferKey, ArrayBuffer>();
+  /** Reused so lobby + duel can call `preloadGameAudio` without duplicate fetches. */
+  private gameAudioPreloadPromise: Promise<void> | null = null;
   private prefetchDone = false;
   private prefetchPromise: Promise<void> | null = null;
   /** Decode shuffle-bed in parallel so deal SFX is not blocked by full buffer preload. */
@@ -272,11 +274,13 @@ export class ReadingAudioEngine {
 
   async preloadGameAudio(): Promise<void> {
     if (typeof window === "undefined") return;
-    await Promise.all(
+    if (this.gameAudioPreloadPromise) return this.gameAudioPreloadPromise;
+    this.gameAudioPreloadPromise = Promise.all(
       (Object.keys(GAME_AUDIO_URLS) as GameAudioBufferKey[]).map((key) =>
         this.ensureGameBuffer(key),
       ),
-    );
+    ).then(() => undefined);
+    return this.gameAudioPreloadPromise;
   }
 
   startGameLoop(): void {
@@ -617,6 +621,7 @@ export class ReadingAudioEngine {
     this.stopAmbientInternal();
     this.stopShuffleInternal();
     this.stopWalletShuffleInternal();
+    this.stopGameLoop();
     try {
       this.ctx?.close();
     } catch (e) {
@@ -628,6 +633,9 @@ export class ReadingAudioEngine {
     this.ambientGain = null;
     this.shuffleGain = null;
     this.buffers.clear();
+    this.gameBuffers.clear();
+    this.gameRawArrayBuffers.clear();
+    this.gameAudioPreloadPromise = null;
     this.preloadDone = false;
     this.preloadPromise = null;
     this.shuffleBedLoadPromise = null;

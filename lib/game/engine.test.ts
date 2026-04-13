@@ -4,6 +4,7 @@ import {
   applyDuelCombo,
   applyPowerUp,
   createLobbySession,
+  startQuestionClockIfDeferred,
   startRun,
   submitAnswer,
 } from "./engine";
@@ -31,6 +32,29 @@ function firstQuestionByType(type: "tf" | "mcq", bossIndex: 0 | 1 | 2) {
   });
   return q ?? null;
 }
+
+describe("question clock (boss intro deferral)", () => {
+  it("defers shownAtMs for the first question of a duel segment", () => {
+    const s = startRun(createLobbySession("t-qclock-1"), [0, 1, 2]);
+    expect(s.currentQuestion).not.toBeNull();
+    expect(s.shownAtMs).toBeNull();
+  });
+
+  it("stamps shownAtMs via startQuestionClockIfDeferred", () => {
+    let s = startRun(createLobbySession("t-qclock-2"), [0, 1, 2]);
+    s = startQuestionClockIfDeferred(s);
+    expect(s.shownAtMs).not.toBeNull();
+  });
+
+  it("stamps shownAtMs immediately when dealing the second question in a segment", () => {
+    let s = startRun(createLobbySession("t-qclock-3"), [0, 1, 2]);
+    s = startQuestionClockIfDeferred(s);
+    s = answerGrade(s, true);
+    expect(s.questionsInDuel).toBe(1);
+    expect(s.currentQuestion).not.toBeNull();
+    expect(s.shownAtMs).not.toBeNull();
+  });
+});
 
 describe("The Hanged Man (+10s question clock)", () => {
   it("moves shownAtMs forward 10s when 20s have elapsed on the 30s budget", () => {

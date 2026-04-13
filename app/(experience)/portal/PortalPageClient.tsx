@@ -14,7 +14,7 @@ import {
 import { ReadingApproachLogoLoader } from "@/components/reading/ReadingApproachLogoLoader";
 import { useReadingAudio } from "@/components/reading/ReadingAudioProvider";
 
-type PortalPhase = "intro" | "connect" | "pathChoose";
+type PortalPhase = "intro" | "connect";
 
 /** Portal landing: wallet connect + path chooser. `view` query is case-insensitive (`Paths` still opens the chooser). */
 export default function PortalPageClient() {
@@ -44,7 +44,7 @@ export default function PortalPageClient() {
     <>
       {phase !== "intro" && (
         <header
-          className="reading-fixed-util-header fixed left-4 right-4 top-0 z-[70] flex items-center justify-between gap-2 md:left-8 md:right-8"
+          className="reading-portal-enter-animate reading-fixed-util-header fixed left-4 right-4 top-0 z-[70] flex items-center justify-between gap-2 md:left-8 md:right-8"
           aria-label="Portal utilities"
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
@@ -66,37 +66,41 @@ export default function PortalPageClient() {
       )}
       <main
         className={`relative z-10 ${
-          phase === "intro" || phase === "connect" || phase === "pathChoose"
+          phase === "intro" || phase === "connect"
             ? `reading-main--fill-viewport flex flex-col${phase === "intro" ? " pointer-events-none" : ""}`
             : ""
         } ${phase !== "intro" ? "reading-main-below-util-header" : ""}${
-          phase === "pathChoose" ? " reading-main--path-choose" : ""
+          showPathChoose ? " reading-main--path-choose" : ""
         }`}
       >
-        {showConnect && (
-          <div className="reading-approach-hero">
-            <div className="reading-approach-logo-shell">
-              <ReadingApproachLogoLoader />
-            </div>
-            <p
-              className="reading-approach-lede flex max-w-xl flex-col items-center gap-1.5 text-center font-sans text-lg font-light leading-relaxed text-ink-800 sm:gap-2 sm:text-xl"
-              style={{
-                animation: "fadeUp 2.2s cubic-bezier(0.16,1,0.3,1) forwards",
-                opacity: 0,
-              }}
-            >
-              <span className="block">Something brought you here.</span>
-              <span className="block">The oracle has been expecting you.</span>
-            </p>
-            <div className="flex flex-col items-center gap-3">
-              <p className="reading-approach-sub max-w-sm font-sans text-center text-[13px] font-medium leading-relaxed text-ink-600">
-                Connect your wallet to be seen.
-              </p>
-              <ReadingConnectPrimary />
-            </div>
+        {(showConnect || showPathChoose) && (
+          <div className="reading-portal-enter-animate reading-portal-enter-animate--stagger flex w-full min-w-0 flex-col items-center">
+            {showConnect && (
+              <div className="reading-approach-hero">
+                <div className="reading-approach-logo-shell">
+                  <ReadingApproachLogoLoader />
+                </div>
+                <p
+                  className="reading-approach-lede flex max-w-xl flex-col items-center gap-1.5 text-center font-sans text-lg font-light leading-relaxed text-ink-800 sm:gap-2 sm:text-xl"
+                  style={{
+                    animation: "fadeUp 2.2s cubic-bezier(0.16,1,0.3,1) forwards",
+                    opacity: 0,
+                  }}
+                >
+                  <span className="block">Something brought you here.</span>
+                  <span className="block">The oracle has been expecting you.</span>
+                </p>
+                <div className="flex flex-col items-center gap-3">
+                  <p className="reading-approach-sub max-w-sm font-sans text-center text-[13px] font-medium leading-relaxed text-ink-600">
+                    Connect your wallet to be seen.
+                  </p>
+                  <ReadingConnectPrimary />
+                </div>
+              </div>
+            )}
+            {showPathChoose && <ReadingPathChooser />}
           </div>
         )}
-        {showPathChoose && <ReadingPathChooser />}
       </main>
     </>
   );

@@ -87,13 +87,15 @@
 }
 
 /*
-  Path chooser needs viewport-level centering from the main shell itself.
-  This avoids inherited hero min-height math from pushing the chooser stack off center.
+  Path chooser: `main` is `flex-col` — `align-items:center` only centers on the cross axis (horizontal).
+  `justify-content:center` vertically centers the stack in the slice below the fixed util header.
+  A small translate lifts the block slightly above geometric center so it matches how the eye reads the cards.
 */
 .reading-page main.reading-main-below-util-header.reading-main--path-choose {
   box-sizing: border-box;
   min-height: var(--reading-vh);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding-bottom: max(0.8rem, env(safe-area-inset-bottom, 0px));
@@ -130,6 +132,69 @@
 
 .reading-page main.reading-main--path-choose .reading-path-chooser {
   min-height: 0;
+  transform: translateY(calc(-1 * clamp(0.5rem, 2.2vh, 1.85rem)));
+}
+
+@media (max-width: 767px) {
+  .reading-page main.reading-main--path-choose .reading-path-chooser {
+    transform: translateY(calc(-1 * clamp(0.35rem, 1.8vh, 1.25rem)));
+  }
+}
+
+/* Portal: after ENTER dismisses, header + main content ease in (orbit already eases via its own timing). */
+@keyframes reading-portal-surface-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reading-path-chooser-lift {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reading-page .reading-portal-enter-animate {
+  animation: reading-portal-surface-in 0.62s cubic-bezier(0.22, 1, 0.32, 1) both;
+}
+
+.reading-page .reading-portal-enter-animate--stagger {
+  animation-delay: 0.11s;
+}
+
+.reading-page .reading-path-chooser-prompt {
+  animation: reading-path-chooser-lift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+.reading-page .reading-path-chooser-tiles {
+  animation: reading-path-chooser-lift 0.58s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-page .reading-portal-enter-animate,
+  .reading-page .reading-portal-enter-animate--stagger {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    animation-delay: 0s;
+  }
+
+  .reading-page .reading-path-chooser-prompt,
+  .reading-page .reading-path-chooser-tiles {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .reading-page .reading-history-scroll-host {

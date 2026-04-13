@@ -14,10 +14,9 @@ interface Props {
   entropySequenceNumber: bigint | null;
   entropyRequestTxHash: string | null;
   entropyCallbackTxHash: string | null;
-  /** True while `/api/game/prepare-run` is in flight (long LLM / oracle work). */
   preparingRun?: boolean;
-  /** True after Start Clash until `start-run` returns (button already busy). */
   runStartPending?: boolean;
+  audioWarmupPending?: boolean;
 }
 
 export function BoosterCardsReveal({
@@ -29,6 +28,7 @@ export function BoosterCardsReveal({
   entropyCallbackTxHash,
   preparingRun = false,
   runStartPending = false,
+  audioWarmupPending = false,
 }: Props) {
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -153,6 +153,22 @@ export function BoosterCardsReveal({
           </svg>
         }
       />
+
+      {audioWarmupPending && (
+        <div
+          className="flex max-w-md flex-col items-center gap-1.5 px-4 text-center"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">
+            <Sparkles className="h-3.5 w-3.5 shrink-0 motion-safe:animate-pulse text-ink-400" aria-hidden />
+            Priming arena audio
+          </p>
+          <p className="text-[12px] font-medium leading-relaxed text-ink-500">
+            Loading duel cues and ambience so the clash starts without a hitch.
+          </p>
+        </div>
+      )}
 
       {(preparingRun || runStartPending) && (
         <div

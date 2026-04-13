@@ -8,6 +8,7 @@ interface Props {
   budgetSec: number;
   /**
    * Server-anchored start time for the visible question (`session.shownAtMs`).
+   * Stays null for the first question of each guardian until POST `/api/game/question-clock` after boss-intro.
    * When null/undefined, falls back to mount time so the timer still works if the anchor is missing.
    */
   anchorMs?: number | null;

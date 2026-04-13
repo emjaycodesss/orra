@@ -300,7 +300,8 @@ function dealNextQuestion(sessionIn: GameSession): GameSession {
       issuedThisDuel: [...session.issuedThisDuel, preparedCandidate.id],
       currentQuestion: decorated,
       currentQuestionAnswer,
-      shownAtMs: Date.now(),
+      // First Q of a guardian segment: UI shows boss-intro before the stem; clock starts on client ack.
+      shownAtMs: session.questionsInDuel === 0 ? null : Date.now(),
       activeHighPriestessNext: false,
       activeSunNext: false,
       activeJusticeNext: false,
@@ -327,11 +328,18 @@ function dealNextQuestion(sessionIn: GameSession): GameSession {
     issuedThisDuel: [...session.issuedThisDuel, q.id],
     currentQuestion: clientQ,
     currentQuestionAnswer,
-    shownAtMs: Date.now(),
+    // Same deferral as prepared-queue path — keeps HUD/engine `QUESTION_BUDGET_SEC` aligned with visible time.
+    shownAtMs: session.questionsInDuel === 0 ? null : Date.now(),
     activeHighPriestessNext: false,
     activeSunNext: false,
     activeJusticeNext: false,
   };
+}
+
+export function startQuestionClockIfDeferred(session: GameSession): GameSession {
+  if (session.phase !== "running" || !session.currentQuestion) return session;
+  if (session.shownAtMs != null) return session;
+  return { ...session, shownAtMs: Date.now() };
 }
 
 /**

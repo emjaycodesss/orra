@@ -1,20 +1,14 @@
 import { Suspense } from "react";
 import PortalPageClient from "./PortalPageClient";
 
-/** Shown only until `useSearchParams` resolves (Next.js CSR bailout). Matches path-chooser preload styling. */
 function PortalSearchParamsFallback() {
   return (
     <main
-      className="reading-main--fill-viewport relative z-10 flex min-h-[50vh] flex-col items-center justify-center gap-4"
+      className="reading-main--fill-viewport pointer-events-none relative z-10 flex flex-col"
       aria-busy="true"
       aria-label="Loading portal"
     >
-      <div className="reading-uiverse-loader reading-uiverse-loader--portal-paths" aria-hidden>
-        <div className="reading-uiverse-loader__ring reading-uiverse-loader__ring-1" />
-        <div className="reading-uiverse-loader__ring reading-uiverse-loader__ring-2" />
-        <div className="reading-uiverse-loader__ring reading-uiverse-loader__ring-3" />
-      </div>
-      <p className="font-sans text-sm font-medium text-ink-500">Entering portal…</p>
+      <span className="sr-only">Loading portal</span>
     </main>
   );
 }
